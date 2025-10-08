@@ -9,7 +9,7 @@
 - Maven
 - Spring Data JPA
 - MySQL
-- Docker
+- Spring Boot Docker Compose(for database)
 - Thymeleaf
 - Spring Security
 - Lombok

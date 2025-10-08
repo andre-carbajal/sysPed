@@ -1,4 +1,5 @@
 <div id="personalTab">
+    <input type="hidden" id="currentRol" th:value="${currentRol}">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2>Personal</h2>
         <button class="btn btn-success" id="btnAgregarPersonal" type="button">Agregar Personal</button>
@@ -19,29 +20,17 @@
                 <td th:text="${usuario.rol.name}"></td>
                 <td>
                     <button class="btn btn-primary btn-modificar-staff" type="button"
-                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
-                        th:if="${currentRol == 'JEFE' and #strings.toUpperCase(usuario.rol.name) == 'JEFE'}">Modificar</button>
-                    <button class="btn btn-primary btn-modificar-staff" type="button"
-                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
-                        th:if="${currentRol == 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'JEFE'}">Modificar</button>
+                            th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
+                    >Modificar</button>
                     <form th:action="@{/dashboard/staff/delete}" method="post" style="display:inline;"
-                          th:if="${currentRol == 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'JEFE'}"
-                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar a ' + this.querySelector('input[name=dni]').value + '?');">
+                          th:if="(${#strings.toUpperCase(currentRol)} == 'JEFE' and ${#strings.toUpperCase(usuario.rol.name)} != 'JEFE') or
+                                 (${#strings.toUpperCase(currentRol)} == 'ADMINISTRADOR' and ${#strings.toUpperCase(usuario.rol.name)} != 'JEFE' and ${#strings.toUpperCase(usuario.rol.name)} != 'ADMINISTRADOR') or
+                                 (${#strings.toUpperCase(currentRol)} != 'JEFE' and ${#strings.toUpperCase(currentRol)} != 'ADMINISTRADOR')">
                         <input type="hidden" name="dni" th:value="${usuario.dni}">
-                        <button class="btn btn-danger" type="submit">Eliminar</button>
-                    </form>
-
-                    <button class="btn btn-primary btn-modificar-staff" type="button"
-                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
-                        th:if="${currentRol == 'ADMINISTRADOR' and #strings.toUpperCase(usuario.rol.name) == 'ADMINISTRADOR'}">Modificar</button>
-                    <button class="btn btn-primary btn-modificar-staff" type="button"
-                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
-                        th:if="${currentRol == 'ADMINISTRADOR' and #strings.toUpperCase(usuario.rol.name) != 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'ADMINISTRADOR'}">Modificar</button>
-                    <form th:action="@{/dashboard/staff/delete}" method="post" style="display:inline;"
-                          th:if="${currentRol == 'ADMINISTRADOR' and #strings.toUpperCase(usuario.rol.name) != 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'ADMINISTRADOR'}"
-                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar a ' + this.querySelector('input[name=dni]').value + '?');">
-                        <input type="hidden" name="dni" th:value="${usuario.dni}">
-                        <button class="btn btn-danger" type="submit">Eliminar</button>
+                        <button class="btn btn-danger" type="submit"
+                                onsubmit="return confirm('¿Estás seguro de que deseas eliminar a ' + this.querySelector('input[name=dni]').value + '?');">
+                            Eliminar
+                        </button>
                     </form>
                 </td>
             </tr>

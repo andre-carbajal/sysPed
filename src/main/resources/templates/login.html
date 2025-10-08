@@ -21,8 +21,8 @@
                 <img id="captchaImage" th:src="@{/captcha/image}" src="/captcha/image" alt="Captcha"
                      style="vertical-align:middle; user-select:none; -webkit-user-select:none;"
                      title="Click para recargar"
-                     onclick="refreshCaptcha()">
-                <button type="button" class="captcha-refresh" id="refreshCaptcha" onclick="refreshCaptcha()">↻</button>
+                     onclick="window.refreshCaptcha()">
+                <button type="button" class="captcha-refresh" id="refreshCaptcha" onclick="window.refreshCaptcha()">↻</button>
             </div>
             <input type="text" id="captcha" name="captcha" placeholder="Ingrese el código CAPTCHA" required
                    autocomplete="off"
@@ -35,24 +35,23 @@
     </div>
 </div>
 <script>
-    function refreshCaptcha() {
-        const timestamp = new Date().getTime();
-        document.getElementById('captchaImage').src = '/captcha/image?' + timestamp;
-
+    window.refreshCaptcha = function() {
         fetch('/captcha/refresh', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             }
+        }).then(function() {
+            const timestamp = new Date().getTime();
+            document.getElementById('captchaImage').src = '/captcha/image?' + timestamp;
+            document.getElementById('captcha').value = '';
         });
-
-        document.getElementById('captcha').value = '';
     }
 
     window.addEventListener('DOMContentLoaded', function() {
         const hasError = document.querySelector('.error-message');
         if (hasError && hasError.textContent.trim() !== "") {
-            setTimeout(refreshCaptcha, 100);
+            setTimeout(window.refreshCaptcha, 100);
         }
     });
 </script>

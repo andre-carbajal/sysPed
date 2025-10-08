@@ -1,4 +1,7 @@
 function initPersonalTabEvents() {
+    const currentRolInput = document.getElementById('currentRol');
+    const currentRol = currentRolInput ? currentRolInput.value.toUpperCase() : '';
+
     const staffEditModal = document.getElementById('staffEditModal');
     const closeStaffEditModal = document.getElementById('closeStaffEditModal');
     const cancelarStaffEdit = document.getElementById('cancelarStaffEdit');
@@ -9,13 +12,34 @@ function initPersonalTabEvents() {
         personalTbody.addEventListener('click', function(e) {
             const btn = e.target.closest('.btn-modificar-staff');
             if (!btn) return;
+            const staffRol = btn.getAttribute('data-rol').toUpperCase();
+
             document.getElementById('editDni').value = btn.getAttribute('data-dni');
             document.getElementById('editName').value = btn.getAttribute('data-name');
             const rolValue = btn.getAttribute('data-rol');
             const rolSelect = document.getElementById('editRol');
             const rolReadonly = document.getElementById('editRolReadonly');
             const rolHidden = document.getElementById('editRolHidden');
-            if (rolValue && (rolValue.toUpperCase() === 'JEFE' || rolValue.toUpperCase() === 'ADMINISTRADOR')) {
+
+            if (rolSelect) {
+                for (let i = 0; i < rolSelect.options.length; i++) {
+                    const option = rolSelect.options[i];
+                    const optionValue = option.value.toUpperCase();
+                    if (currentRol === 'ADMINISTRADOR' && (optionValue === 'JEFE' || optionValue === 'ADMINISTRADOR')) {
+                        option.style.display = 'none';
+                    } else {
+                        option.style.display = '';
+                    }
+                }
+            }
+
+            let soloLectura = false;
+            if ((currentRol === 'JEFE' && staffRol === 'JEFE') ||
+                (currentRol === 'ADMINISTRADOR' && (staffRol === 'JEFE' || staffRol === 'ADMINISTRADOR'))) {
+                soloLectura = true;
+            }
+
+            if (soloLectura) {
                 rolSelect.style.display = 'none';
                 rolReadonly.style.display = '';
                 rolReadonly.value = rolValue;

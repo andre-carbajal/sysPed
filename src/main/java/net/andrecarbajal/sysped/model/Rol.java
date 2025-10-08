@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 
 @Entity
-@Table(name = "rol")
+@Table(name = "roles")
 @Getter
 public class Rol {
     @Id

@@ -1,9 +1,5 @@
 # sysPed
 
-## Requirements
-- Java 21
-- Docker
-
 ## Technologies Used
 - Spring Boot
 - Maven
@@ -14,6 +10,13 @@
 - Spring Security
 - Lombok
 - Spring Web
+
+## Requirements
+- Java 21
+- Docker and Docker Compose installed
+
+## Recommendations
+- Use an IDE like IntelliJ IDEA for better development experience.
 
 ## Installation
 1. Clone the repository:

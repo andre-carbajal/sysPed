@@ -1,0 +1,105 @@
+classDiagram
+    class DashboardController {
+        <<Controller>>
+        -StaffService staffService
+        -RolService rolService
+        +dashboard(Model) String
+        +personalFragment(Model) String
+    }
+
+    class DashboardStaffController {
+        <<Controller>>
+        -StaffService staffService
+        -RolService rolService
+        +deleteStaff(String, RedirectAttributes) String
+        +editStaff(StaffEditRequestDto, BindingResult, RedirectAttributes) String
+        +createStaff(StaffCreateRequestDto, BindingResult, RedirectAttributes) String
+    }
+
+    class StaffService {
+        <<Service>>
+        -StaffRepository staffRepository
+        -PasswordEncoder passwordEncoder
+        +createStaff(StaffCreateRequestDto, RolEntity) void
+        +deleteStaffByDni(String) void
+        +existStaffByDni(String) boolean
+        +updateStaff(StaffEditRequestDto, RolEntity) void
+        +findAllStaff() List~Staff~
+        +findStaffByDni(String) Optional~Staff~
+    }
+
+    class RolService {
+        <<Service>>
+        -RolRepository rolRepository
+        +findAllRol() List~Rol~
+        +findRolByName(String) RolEntity
+    }
+
+    class StaffRepository {
+        <<Interface>>
+        <<Repository>>
+        +findByDni(String) Optional~Staff~
+        +findByName(String) Optional~Staff~
+        +existsById(String) boolean
+        +deleteById(String) void
+        +findAll() List~Staff~
+    }
+
+    class RolRepository {
+        <<Interface>>
+        <<Repository>>
+        +findByName(String) Optional~Rol~
+        +findAll() List~Rol~
+    }
+
+    class Staff {
+        <<Entity>>
+        -String dni
+        -String password
+        -String name
+        -RolEntity rol
+        +getDni() String
+        +getPassword() String
+        +getName() String
+        +getRol() RolEntity
+        +setDni(String)
+        +setPassword(String)
+        +setName(String)
+        +setRol(RolEntity)
+    }
+
+    class Rol {
+        <<Entity>>
+        -Long id
+        -String name
+        +getId() Long
+        +getName() String
+        +setId(Long)
+        +setName(String)
+    }
+
+    class StaffCreateRequestDto {
+        <<DTO>>
+        +String dni
+        +String password
+        +String name
+        +String rolName
+    }
+
+    class StaffEditRequestDto {
+        <<DTO>>
+        +String dni
+        +String password
+        +String name
+        +String rolName
+    }
+
+    DashboardController --> StaffService
+    DashboardController --> RolService
+    DashboardStaffController --> StaffService
+    DashboardStaffController --> RolService
+
+    StaffService --> StaffRepository
+
+    RolService --> RolRepository
+    Staff --> Rol

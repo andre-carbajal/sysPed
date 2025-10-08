@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradición Norteña - Login</title>
+    <link rel="stylesheet" th:href="@{/style.css}" href="/style.css">
+</head>
+<body>
+<div class="login-container" id="loginSection">
+    <div class="login-form">
+        <h2>TRADICIÓN NORTEÑA</h2>
+        <div th:if="${error}" class="error-message" style="color:red; margin-bottom:10px;">[[${error}]]</div>
+        <form id="loginForm" th:action="@{/login}" method="post">
+            <input type="text" id="username" name="username" placeholder="DNI (8 dígitos)" required pattern="[0-9]{8}"
+                   maxlength="8" minlength="8" inputmode="numeric" autocomplete="off">
+            <input type="password" id="password" name="password" placeholder="Contraseña" required autocomplete="off">
+
+            <div class="captcha-container">
+                <img id="captchaImage" th:src="@{/captcha/image}" src="/captcha/image" alt="Captcha"
+                     style="vertical-align:middle; user-select:none; -webkit-user-select:none;"
+                     title="Click para recargar"
+                     onclick="refreshCaptcha()">
+                <button type="button" class="captcha-refresh" id="refreshCaptcha" onclick="refreshCaptcha()">↻</button>
+            </div>
+            <input type="text" id="captcha" name="captcha" placeholder="Ingrese el código CAPTCHA" required
+                   autocomplete="off"
+                   maxlength="6">
+            <div id="dniError" style="color:red; display:none; margin-bottom:10px;">El DNI debe tener exactamente 8
+                dígitos numéricos.
+            </div>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+    </div>
+</div>
+<script>
+    function refreshCaptcha() {
+        const timestamp = new Date().getTime();
+        document.getElementById('captchaImage').src = '/captcha/image?' + timestamp;
+
+        fetch('/captcha/refresh', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        document.getElementById('captcha').value = '';
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        const hasError = document.querySelector('.error-message');
+        if (hasError && hasError.textContent.trim() !== "") {
+            setTimeout(refreshCaptcha, 100);
+        }
+    });
+</script>
+</body>
+</html>

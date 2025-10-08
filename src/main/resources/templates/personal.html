@@ -1,0 +1,128 @@
+<div id="personalTab">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Personal</h2>
+        <button class="btn btn-success" id="btnAgregarPersonal" type="button">Agregar Personal</button>
+    </div>
+    <table class="crud-table">
+        <thead>
+            <tr>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="personalTbody">
+            <tr th:each="usuario : ${users}">
+                <td th:text="${usuario.dni}"></td>
+                <td th:text="${usuario.name}"></td>
+                <td th:text="${usuario.rol.name}"></td>
+                <td>
+                    <button class="btn btn-primary btn-modificar-staff" type="button"
+                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
+                        th:if="${currentRol == 'JEFE' and #strings.toUpperCase(usuario.rol.name) == 'JEFE'}">Modificar</button>
+                    <button class="btn btn-primary btn-modificar-staff" type="button"
+                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
+                        th:if="${currentRol == 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'JEFE'}">Modificar</button>
+                    <form th:action="@{/dashboard/staff/delete}" method="post" style="display:inline;"
+                          th:if="${currentRol == 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'JEFE'}"
+                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar a ' + this.querySelector('input[name=dni]').value + '?');">
+                        <input type="hidden" name="dni" th:value="${usuario.dni}">
+                        <button class="btn btn-danger" type="submit">Eliminar</button>
+                    </form>
+
+                    <button class="btn btn-primary btn-modificar-staff" type="button"
+                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
+                        th:if="${currentRol == 'ADMINISTRADOR' and #strings.toUpperCase(usuario.rol.name) == 'ADMINISTRADOR'}">Modificar</button>
+                    <button class="btn btn-primary btn-modificar-staff" type="button"
+                        th:attr="data-dni=${usuario.dni},data-name=${usuario.name},data-rol=${usuario.rol.name}"
+                        th:if="${currentRol == 'ADMINISTRADOR' and #strings.toUpperCase(usuario.rol.name) != 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'ADMINISTRADOR'}">Modificar</button>
+                    <form th:action="@{/dashboard/staff/delete}" method="post" style="display:inline;"
+                          th:if="${currentRol == 'ADMINISTRADOR' and #strings.toUpperCase(usuario.rol.name) != 'JEFE' and #strings.toUpperCase(usuario.rol.name) != 'ADMINISTRADOR'}"
+                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar a ' + this.querySelector('input[name=dni]').value + '?');">
+                        <input type="hidden" name="dni" th:value="${usuario.dni}">
+                        <button class="btn btn-danger" type="submit">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-overlay" id="staffEditModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="staffEditModalTitle">Editar Personal</h2>
+            <button class="modal-close" id="closeStaffEditModal">&times;</button>
+        </div>
+        <div class="modal-body" id="staffEditModalBody">
+            <form id="staffEditForm" th:action="@{/dashboard/staff/edit}" method="post">
+                <div class="form-group">
+                    <label for="editDni">DNI</label>
+                    <input type="text" id="editDni" name="dni" readonly required pattern="[0-9]{8}" maxlength="8" minlength="8" inputmode="numeric" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="editName">Nombre</label>
+                    <input type="text" id="editName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="editRol">Rol</label>
+                    <select id="editRol" name="rolName" required>
+                        <option th:each="rol : ${roles}"
+                                th:value="${rol.name}"
+                                th:text="${rol.name}">
+                        </option>
+                    </select>
+                    <input type="text" id="editRolReadonly" class="form-control" readonly disabled style="display:none; margin-top:5px;">
+                    <input type="hidden" id="editRolHidden" name="rolName" value="">
+                </div>
+                <div class="form-group">
+                    <label for="editPassword">Contraseña</label>
+                    <input type="password" id="editPassword" name="password" placeholder="Dejar en blanco para no cambiar">
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                    <button type="button" class="btn btn-danger" id="cancelarStaffEdit">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="staffCreateModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="staffCreateModalTitle">Crear Nuevo Personal</h2>
+            <button class="modal-close" id="closeStaffCreateModal">&times;</button>
+        </div>
+        <div class="modal-body" id="staffCreateModalBody">
+            <form id="staffCreateForm" th:action="@{/dashboard/staff/create}" method="post">
+                <div class="form-group">
+                    <label for="createDni">DNI</label>
+                    <input type="text" id="createDni" name="dni" required pattern="[0-9]{8}" maxlength="8" minlength="8" inputmode="numeric" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="createName">Nombre</label>
+                    <input type="text" id="createName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="createRol">Rol</label>
+                    <select id="createRol" name="rolName" required>
+                        <option th:each="rol : ${roles}"
+                                th:value="${rol.name}"
+                                th:text="${rol.name}">
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="createPassword">Contraseña</label>
+                    <input type="password" id="createPassword" name="password" required>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">Crear Personal</button>
+                    <button type="button" class="btn btn-danger" id="cancelarStaffCreate">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

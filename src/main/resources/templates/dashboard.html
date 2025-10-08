@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradición Norteña - Dashboard</title>
+    <link rel="stylesheet" th:href="@{/style.css}" href="/style.css">
+</head>
+<body>
+<div class="app-container" id="appSection">
+    <div class="header">
+        <h1>TRADICIÓN NORTEÑA - Sistema de Gestión</h1>
+        <div class="user-info">
+            <span id="userWelcome">Bienvenido, <span th:text="${staff_name}">Usuario</span></span>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button id="logoutBtn" type="submit">Cerrar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs" id="navTabs">
+        <div class="nav-tab" data-tab="personal" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Personal</div>
+    </div>
+
+    <div id="dynamicTabContent"></div>
+</div>
+
+<script>
+const navTabs = document.getElementById('navTabs');
+const dynamicTabContent = document.getElementById('dynamicTabContent');
+const navTabElements = document.querySelectorAll('.nav-tab');
+
+navTabs && navTabs.addEventListener('click', function(e) {
+    const tab = e.target.closest('.nav-tab');
+    if (!tab) return;
+    const tabName = tab.getAttribute('data-tab');
+    navTabElements.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    if (tabName === 'personal') {
+        fetch('/dashboard/personal-fragment')
+            .then(res => res.text())
+            .then(html => {
+                dynamicTabContent.innerHTML = html;
+                const script = document.createElement('script');
+                script.src = '/personal.js';
+                script.onload = function() {
+                    if (typeof initPersonalTabEvents === 'function') {
+                        initPersonalTabEvents();
+                    }
+                };
+                document.body.appendChild(script);
+            });
+    }
+});
+
+</script>
+</body>
+</html>

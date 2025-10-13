@@ -24,6 +24,7 @@
     <!-- Navigation Tabs -->
     <div class="nav-tabs" id="navTabs">
         <div class="nav-tab" data-tab="personal" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Personal</div>
+        <div class="nav-tab" data-tab="platos" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MESERO', 'ROLE_COCINERO')">Platos</div>
     </div>
 
     <div id="dynamicTabContent"></div>
@@ -41,7 +42,7 @@ navTabs && navTabs.addEventListener('click', function(e) {
     navTabElements.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     if (tabName === 'personal') {
-        fetch('/dashboard/personal-fragment')
+        fetch('/dashboard/personal_fragment')
             .then(res => res.text())
             .then(html => {
                 dynamicTabContent.innerHTML = html;
@@ -50,6 +51,20 @@ navTabs && navTabs.addEventListener('click', function(e) {
                 script.onload = function() {
                     if (typeof initPersonalTabEvents === 'function') {
                         initPersonalTabEvents();
+                    }
+                };
+                document.body.appendChild(script);
+            });
+    } else if (tabName === 'platos') {
+        fetch('/dashboard/platos_fragment')
+            .then(res => res.text())
+            .then(html => {
+                dynamicTabContent.innerHTML = html;
+                const script = document.createElement('script');
+                script.src = '/platos.js';
+                script.onload = function() {
+                    if (typeof initPlatosTabEvents === 'function') {
+                        initPlatosTabEvents();
                     }
                 };
                 document.body.appendChild(script);

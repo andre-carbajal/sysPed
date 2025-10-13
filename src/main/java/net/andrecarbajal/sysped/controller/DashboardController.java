@@ -1,8 +1,12 @@
 package net.andrecarbajal.sysped.controller;
 
 import lombok.RequiredArgsConstructor;
+import net.andrecarbajal.sysped.model.Category;
+import net.andrecarbajal.sysped.model.Plate;
 import net.andrecarbajal.sysped.model.Rol;
 import net.andrecarbajal.sysped.model.Staff;
+import net.andrecarbajal.sysped.service.CategoryService;
+import net.andrecarbajal.sysped.service.PlateService;
 import net.andrecarbajal.sysped.service.RolService;
 import net.andrecarbajal.sysped.service.StaffService;
 import org.springframework.security.core.Authentication;
@@ -21,6 +25,8 @@ import java.util.stream.Collectors;
 public class DashboardController {
     private final StaffService staffService;
     private final RolService rolService;
+    private final PlateService plateService;
+    private final CategoryService categoryService;
 
     @GetMapping
     public String dashboard(Model model) {
@@ -33,7 +39,7 @@ public class DashboardController {
         return "dashboard";
     }
 
-    @GetMapping("/personal-fragment")
+    @GetMapping("/personal_fragment")
     public String personalFragment(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String dni = auth.getName();
@@ -53,6 +59,13 @@ public class DashboardController {
         model.addAttribute("users", this.staffService.findAllStaff());
         model.addAttribute("roles", filteredRoles);
         model.addAttribute("currentRol", currentRol);
-        return "personal";
+        return "fragments/personal";
+    }
+
+    @GetMapping("/platos_fragment")
+    public String platosFragment(Model model) {
+        List<Category> categories = categoryService.findAllCategories();
+        model.addAttribute("categories", categories);
+        return "fragments/platos";
     }
 }

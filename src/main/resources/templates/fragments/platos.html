@@ -1,0 +1,105 @@
+<style>
+    .platos-grid-container {
+        padding: 2.5vw 2vw;
+        height: 100vh;
+        overflow-y: auto;
+        background: #f7f7fa;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        box-sizing: border-box;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .category-section {
+        margin-bottom: 2.5rem;
+        padding: 1.2rem;
+        background: #e3e8ff;
+        border-radius: 10px;
+        border: 2px solid #b3baf7;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    }
+    .category-section > h3 {
+        font-size: 1.6em;
+        color: #2a3a7a;
+        margin-bottom: 1rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+    .subcategory-section {
+        margin-bottom: 2rem;
+        padding: 0.8rem 1rem;
+        background: #f0f4ff;
+        border-radius: 8px;
+        border: 1.5px solid #c7d2fe;
+    }
+    .subcategory-section > h4 {
+        font-size: 1.2em;
+        color: #3a4ca7;
+        margin-bottom: 0.7rem;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+    .platos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .plato-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #e0e0e0;
+    }
+    .plato-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        border: 2px solid #9ac7ff;
+    }
+    .plato-info {
+        text-align: center;
+    }
+    .plato-price {
+        font-weight: bold;
+        color: #2a7;
+        margin-top: 0.5em;
+        display: block;
+    }
+</style>
+<div class="platos-grid-container">
+    <h2 style="font-size:2em;color:#2a3a7a;margin-bottom:2rem;text-align:center;font-weight:bold;">Lista de Platos</h2>
+    <div th:each="category : ${categories}" class="category-section">
+        <h3 th:text="${category.name}"></h3>
+        <div th:if="${#lists.size(category.plates.?[subcategory == null]) > 0}" class="platos-grid">
+            <div th:each="plate : ${category.plates}" th:if="${plate.subcategory == null}" class="plato-card">
+                <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato" class="plato-img"/>
+                <div class="plato-info">
+                    <h3 th:text="${plate.name}"></h3>
+                    <p th:text="${plate.description}"></p>
+                    <span class="plato-price">S/ <span th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
+                </div>
+            </div>
+        </div>
+        <div th:each="subcategory : ${category.subcategories}" class="subcategory-section">
+            <h4 th:text="${subcategory.name}"></h4>
+            <div th:if="${#lists.size(subcategory.plates) > 0}" class="platos-grid">
+                <div th:each="plate : ${subcategory.plates}" class="plato-card">
+                    <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato" class="plato-img"/>
+                    <div class="plato-info">
+                        <h3 th:text="${plate.name}"></h3>
+                        <p th:text="${plate.description}"></p>
+                        <span class="plato-price">S/ <span th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

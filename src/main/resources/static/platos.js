@@ -1,35 +1,3 @@
-function initPlatoToggleEvents() {
-    document.querySelectorAll('.plato-toggle-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const plateId = btn.getAttribute('data-plate-id');
-            const currentActive = btn.getAttribute('data-active') === 'true';
-            const newActive = !currentActive;
-            btn.disabled = true;
-            fetch('/dashboard/plate/set-active', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `plateId=${plateId}&active=${newActive}`
-            })
-            .then(response => response.text())
-            .then(result => {
-                if (result === 'OK') {
-                    btn.setAttribute('data-active', newActive);
-                    btn.textContent = newActive ? 'Desactivar' : 'Activar';
-                } else {
-                    alert(result);
-                }
-                btn.disabled = false;
-            })
-            .catch(() => {
-                alert('Error de red');
-                btn.disabled = false;
-            });
-        });
-    });
-}
-
 function initPlatosTabEvents() {
     document.querySelectorAll('.category-content').forEach(function (content) {
         content.style.maxHeight = '0';

@@ -25,6 +25,7 @@ public class SecurityConfig {
                         .requestMatchers("/captcha/**").permitAll()
                         .requestMatchers("/dashboard/**").authenticated()
                         .requestMatchers("/dashboard/staff/**").hasAnyRole("ADMINISTRADOR", "JEFE")
+                        .requestMatchers("/dashboard/plate/set-active").hasRole("COCINERO")
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
                 )

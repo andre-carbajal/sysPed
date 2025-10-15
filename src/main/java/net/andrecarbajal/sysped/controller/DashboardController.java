@@ -2,11 +2,9 @@ package net.andrecarbajal.sysped.controller;
 
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.model.Category;
-import net.andrecarbajal.sysped.model.Plate;
 import net.andrecarbajal.sysped.model.Rol;
 import net.andrecarbajal.sysped.model.Staff;
 import net.andrecarbajal.sysped.service.CategoryService;
-import net.andrecarbajal.sysped.service.PlateService;
 import net.andrecarbajal.sysped.service.RolService;
 import net.andrecarbajal.sysped.service.StaffService;
 import org.springframework.security.core.Authentication;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 public class DashboardController {
     private final StaffService staffService;
     private final RolService rolService;
-    private final PlateService plateService;
     private final CategoryService categoryService;
 
     @GetMapping

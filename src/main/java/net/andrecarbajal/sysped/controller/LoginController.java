@@ -17,10 +17,8 @@ public class LoginController {
 
     @GetMapping
     public String login(HttpSession session, @RequestParam(value = "error", required = false) String error, Model model) {
-        if (session.getAttribute("captchaCode") == null) {
-            String captchaCode = captchaService.generateCaptchaCode();
-            session.setAttribute("captchaCode", captchaCode);
-        }
+        String captchaCode = captchaService.generateCaptchaCode();
+        session.setAttribute("captchaCode", captchaCode);
         if (error != null) {
             if ("captcha".equals(error)) {
                 model.addAttribute("error", "Captcha incorrecto");

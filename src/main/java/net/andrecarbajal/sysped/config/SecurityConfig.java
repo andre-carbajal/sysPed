@@ -1,5 +1,6 @@
 package net.andrecarbajal.sysped.config;
 
+import net.andrecarbajal.sysped.service.CaptchaService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,9 +18,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public CaptchaValidationFilter captchaValidationFilter(CaptchaService captchaService) {
+        return new CaptchaValidationFilter(captchaService);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, CaptchaValidationFilter captchaValidationFilter) throws Exception {
         http
-                .addFilterBefore(new CaptchaValidationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(captchaValidationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/**.css", "/**.js").permitAll()
                         .requestMatchers("/captcha/**").permitAll()

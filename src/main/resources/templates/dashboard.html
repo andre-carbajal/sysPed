@@ -66,6 +66,9 @@ navTabs && navTabs.addEventListener('click', function(e) {
                     if (typeof initPlatosTabEvents === 'function') {
                         initPlatosTabEvents();
                     }
+                    if (typeof connectPlateStatusWebSocket === 'function') {
+                        connectPlateStatusWebSocket();
+                    }
                 };
                 document.body.appendChild(script);
             });
@@ -73,5 +76,7 @@ navTabs && navTabs.addEventListener('click', function(e) {
 });
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </body>
 </html>

@@ -43,5 +43,9 @@ public class Plate {
     private Subcategory subcategory;
 
     private Boolean active;
+
+    public Boolean isActive() {
+        return this.active;
+    }
 }
 

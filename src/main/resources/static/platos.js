@@ -66,6 +66,33 @@ function initPlatoCardToggleEvents() {
     });
 }
 
+// --- WebSocket para actualización en tiempo real de platos ---
+let stompClient = null;
+
+function connectPlateStatusWebSocket() {
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function () {
+        stompClient.subscribe('/topic/plate-status', function (message) {
+            const plate = JSON.parse(message.body);
+            updatePlateStatusInView(plate);
+        });
+    });
+}
+
+function updatePlateStatusInView(plate) {
+    const card = document.querySelector(`.plato-card[data-plate-id="${plate.id}"]`);
+    if (card) {
+        card.setAttribute('data-active', plate.active);
+        card.classList.toggle('plato-inactivo', !plate.active);
+    }
+}
+
+// Llama a la función de conexión al cargar la página
+window.addEventListener('DOMContentLoaded', function() {
+    connectPlateStatusWebSocket();
+});
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
         initPlatosTabEvents();

@@ -2,10 +2,13 @@ package net.andrecarbajal.sysped.service;
 
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.controller.PlateStatusWebSocketController;
+import net.andrecarbajal.sysped.dto.PlateDto;
 import net.andrecarbajal.sysped.dto.PlateStatusDto;
 import net.andrecarbajal.sysped.model.Plate;
 import net.andrecarbajal.sysped.repository.PlateRepository;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +23,22 @@ public class PlateService {
         Plate updatedPlate = plateRepository.save(plate);
         PlateStatusDto dto = new PlateStatusDto(updatedPlate.getId(), updatedPlate.isActive());
         plateStatusWebSocketController.sendPlateStatusUpdate(dto);
+        PlateDto fullDto = new PlateDto(updatedPlate.getId(), updatedPlate.getName(), updatedPlate.getDescription(), updatedPlate.getPrice(), updatedPlate.getImageBase64(), updatedPlate.isActive());
+        plateStatusWebSocketController.sendPlateUpdate(fullDto);
+        return updatedPlate;
+    }
+
+    public Plate updatePlate(Long id, String name, String description, BigDecimal price, String imageBase64, boolean active) {
+        Plate plate = plateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Plato no encontrado"));
+        plate.setName(name);
+        plate.setDescription(description);
+        plate.setPrice(price);
+        plate.setImageBase64(imageBase64);
+        plate.setActive(active);
+        Plate updatedPlate = plateRepository.save(plate);
+        PlateDto fullDto = new PlateDto(updatedPlate.getId(), updatedPlate.getName(), updatedPlate.getDescription(), updatedPlate.getPrice(), updatedPlate.getImageBase64(), updatedPlate.isActive());
+        plateStatusWebSocketController.sendPlateUpdate(fullDto);
         return updatedPlate;
     }
 }

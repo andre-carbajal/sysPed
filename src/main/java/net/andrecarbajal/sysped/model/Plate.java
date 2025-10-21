@@ -31,7 +31,7 @@ public class Plate {
     @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(name = "image_base64", columnDefinition = "TEXT")
+    @Column(name = "image_base64", columnDefinition = "LONGTEXT")
     private String imageBase64;
 
     @ManyToOne

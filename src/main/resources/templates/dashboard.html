@@ -24,7 +24,7 @@
     <!-- Navigation Tabs -->
     <div class="nav-tabs" id="navTabs">
         <div class="nav-tab" data-tab="personal" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Personal</div>
-        <div class="nav-tab" data-tab="platos" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MESERO', 'ROLE_COCINERO')">Platos</div>
+        <div class="nav-tab" data-tab="platos" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO', 'ROLE_COCINERO')">Platos</div>
     </div>
 
     <div id="dynamicTabContent"></div>

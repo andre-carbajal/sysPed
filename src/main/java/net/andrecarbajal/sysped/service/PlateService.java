@@ -32,7 +32,8 @@ public class PlateService {
         Plate plate = plateRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plato no encontrado"));
         plate.setPrice(price);
-        plate.setImageBase64(imageBase64);
+        String normalizedImage = (imageBase64 == null || imageBase64.trim().isEmpty()) ? null : imageBase64;
+        plate.setImageBase64(normalizedImage);
         plate.setActive(active);
         Plate updatedPlate = plateRepository.save(plate);
         PlateDto fullDto = new PlateDto(updatedPlate.getId(), updatedPlate.getName(), updatedPlate.getDescription(), updatedPlate.getPrice(), updatedPlate.getImageBase64(), updatedPlate.isActive());

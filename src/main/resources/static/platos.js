@@ -123,12 +123,26 @@ function updatePlateInView(plate) {
         card.setAttribute('data-active', plate.active);
         card.setAttribute('data-image-base64', plate.imageBase64 || '');
 
-        const img = card.querySelector('.plato-img');
-        if (plate.imageBase64) {
+        let img = card.querySelector('.plato-img');
+        const hasImage = plate.imageBase64 && String(plate.imageBase64).trim() !== '';
+        if (hasImage) {
+            if (!img) {
+                img = document.createElement('img');
+                img.className = 'plato-img';
+                img.alt = 'Imagen del plato';
+                const info = card.querySelector('.plato-info');
+                if (info) {
+                    card.insertBefore(img, info);
+                } else {
+                    card.appendChild(img);
+                }
+            }
             img.src = 'data:image/jpeg;base64,' + plate.imageBase64;
             img.style.display = 'block';
         } else {
-            img.style.display = 'none';
+            if (img) {
+                img.remove();
+            }
         }
 
         const nameEl = card.querySelector('h3');
@@ -205,12 +219,18 @@ function submitPlateUpdate(plateId, formData) {
         active: formData.get('active') === 'on'
     };
 
+    // Construir body form-urlencoded, omitiendo imageBase64 si es nulo/''
+    let body = `id=${encodeURIComponent(data.id)}&price=${encodeURIComponent(data.price)}&active=${encodeURIComponent(data.active)}`;
+    if (data.imageBase64 && String(data.imageBase64).trim() !== '') {
+        body += `&imageBase64=${encodeURIComponent(data.imageBase64)}`;
+    }
+
     fetch('/dashboard/plate/update', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: `id=${data.id}&price=${data.price}&imageBase64=${encodeURIComponent(data.imageBase64)}&active=${data.active}`
+        body: body
     })
     .then(response => response.text())
     .then(result => {

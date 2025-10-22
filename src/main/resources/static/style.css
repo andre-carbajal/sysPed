@@ -341,7 +341,6 @@ div#dynamicTabContent {
     flex-direction: column;
 }
 
-/* Admin Styles */
 .crud-table {
     width: 100%;
     border-collapse: collapse;
@@ -375,7 +374,6 @@ div#dynamicTabContent {
     border-radius: 4px;
 }
 
-/* Cocina Styles */
 .cola-cocina {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -407,7 +405,6 @@ div#dynamicTabContent {
     padding: 5px 0;
 }
 
-/* Modal Styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -499,7 +496,6 @@ div#dynamicTabContent {
     margin-top: 15px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .main-content {
         flex-direction: column;

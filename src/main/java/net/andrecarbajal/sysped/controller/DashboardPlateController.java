@@ -29,9 +29,9 @@ public class DashboardPlateController {
 
     @PostMapping("/update")
     @ResponseBody
-    public String updatePlate(@RequestParam Long id, @RequestParam String name, @RequestParam String description, @RequestParam BigDecimal price, @RequestParam String imageBase64, @RequestParam boolean active) {
+    public String updatePlate(@RequestParam Long id, @RequestParam BigDecimal price, @RequestParam String imageBase64, @RequestParam boolean active) {
         try {
-            plateService.updatePlate(id, name, description, price, imageBase64, active);
+            plateService.updatePlate(id, price, imageBase64, active);
             return "OK";
         } catch (Exception e) {
             return "ERROR: " + e.getMessage();

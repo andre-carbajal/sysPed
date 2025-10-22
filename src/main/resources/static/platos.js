@@ -34,7 +34,6 @@ function initPlatoCardToggleEvents() {
             const plateId = card.getAttribute('data-plate-id');
 
             if (isCocinero) {
-                // Toggle active status for cocinero
                 const currentActive = card.getAttribute('data-active') === 'true';
                 const newActive = !currentActive;
                 if (!confirm('¿Deseas guardar el cambio?')) {
@@ -67,7 +66,6 @@ function initPlatoCardToggleEvents() {
                     card.style.pointerEvents = '';
                 });
             } else {
-                // Open modal for admin/jefe
                 openUpdatePlateModal(card);
             }
         });
@@ -101,25 +99,19 @@ function updatePlateStatusInView(plate) {
 }
 
 function openUpdatePlateModal(card) {
-    const modal = document.getElementById('updatePlateModal');
+    const overlay = document.getElementById('updatePlateModal');
     const form = document.getElementById('updatePlateForm');
-
-    // Populate form fields
     document.getElementById('plateName').value = card.getAttribute('data-name') || '';
     document.getElementById('plateDescription').value = card.getAttribute('data-description') || '';
     document.getElementById('platePrice').value = card.getAttribute('data-price') || '';
     document.getElementById('plateActive').checked = card.getAttribute('data-active') === 'true';
-
-    // Store plate ID in form
     form.setAttribute('data-plate-id', card.getAttribute('data-plate-id'));
-
-    // Show modal
-    modal.style.display = 'block';
+    overlay.style.display = 'flex';
 }
 
 function closeUpdatePlateModal() {
-    const modal = document.getElementById('updatePlateModal');
-    modal.style.display = 'none';
+    const overlay = document.getElementById('updatePlateModal');
+    overlay.style.display = 'none';
 }
 
 function updatePlateInView(plate) {
@@ -131,7 +123,6 @@ function updatePlateInView(plate) {
         card.setAttribute('data-active', plate.active);
         card.setAttribute('data-image-base64', plate.imageBase64 || '');
 
-        // Update UI elements
         const img = card.querySelector('.plato-img');
         if (plate.imageBase64) {
             img.src = 'data:image/jpeg;base64,' + plate.imageBase64;
@@ -153,7 +144,6 @@ function updatePlateInView(plate) {
     }
 }
 
-// Llama a la función de conexión al cargar la página
 window.addEventListener('DOMContentLoaded', function() {
     connectPlateStatusWebSocket();
 });
@@ -171,25 +161,17 @@ if (document.readyState === 'loading') {
 }
 
 function initModalEvents() {
-    // Close modal when clicking the close button
-    document.querySelector('.close').addEventListener('click', closeUpdatePlateModal);
-
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('updatePlateModal');
-        if (event.target === modal) {
+    document.getElementById('closeUpdatePlateModal').addEventListener('click', closeUpdatePlateModal);
+    document.getElementById('cancelUpdate').addEventListener('click', closeUpdatePlateModal);
+    document.getElementById('updatePlateModal').addEventListener('click', function(event) {
+        if (event.target === this) {
             closeUpdatePlateModal();
         }
     });
-
-    // Handle form submission
     document.getElementById('updatePlateForm').addEventListener('submit', function(event) {
         event.preventDefault();
         savePlateUpdate();
     });
-
-    // Handle cancel button
-    document.getElementById('cancelUpdate').addEventListener('click', closeUpdatePlateModal);
 }
 
 function savePlateUpdate() {
@@ -197,7 +179,6 @@ function savePlateUpdate() {
     const plateId = form.getAttribute('data-plate-id');
     const formData = new FormData(form);
 
-    // Convert image file to base64 if present
     const imageFile = formData.get('image');
     if (imageFile && imageFile.size > 0) {
         const reader = new FileReader();
@@ -209,7 +190,6 @@ function savePlateUpdate() {
         };
         reader.readAsDataURL(imageFile);
     } else {
-        // No new image, use existing or empty
         const existingImage = document.querySelector(`.plato-card[data-plate-id="${plateId}"]`).getAttribute('data-image-base64') || '';
         formData.set('imageBase64', existingImage);
         formData.delete('image');
@@ -220,8 +200,6 @@ function savePlateUpdate() {
 function submitPlateUpdate(plateId, formData) {
     const data = {
         id: plateId,
-        name: formData.get('name'),
-        description: formData.get('description'),
         price: parseFloat(formData.get('price')),
         imageBase64: formData.get('imageBase64'),
         active: formData.get('active') === 'on'
@@ -232,13 +210,12 @@ function submitPlateUpdate(plateId, formData) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: `id=${data.id}&name=${encodeURIComponent(data.name)}&description=${encodeURIComponent(data.description)}&price=${data.price}&imageBase64=${encodeURIComponent(data.imageBase64)}&active=${data.active}`
+        body: `id=${data.id}&price=${data.price}&imageBase64=${encodeURIComponent(data.imageBase64)}&active=${data.active}`
     })
     .then(response => response.text())
     .then(result => {
         if (result === 'OK') {
             closeUpdatePlateModal();
-            // UI will be updated via WebSocket
         } else {
             alert(result);
         }

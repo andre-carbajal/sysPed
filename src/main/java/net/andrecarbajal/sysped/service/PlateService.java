@@ -28,11 +28,9 @@ public class PlateService {
         return updatedPlate;
     }
 
-    public Plate updatePlate(Long id, String name, String description, BigDecimal price, String imageBase64, boolean active) {
+    public Plate updatePlate(Long id, BigDecimal price, String imageBase64, boolean active) {
         Plate plate = plateRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plato no encontrado"));
-        plate.setName(name);
-        plate.setDescription(description);
         plate.setPrice(price);
         plate.setImageBase64(imageBase64);
         plate.setActive(active);

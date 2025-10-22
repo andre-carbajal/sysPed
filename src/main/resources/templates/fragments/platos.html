@@ -5,20 +5,22 @@
         overflow-y: auto;
         background: #f7f7fa;
         border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
         box-sizing: border-box;
         width: 100%;
         display: flex;
         flex-direction: column;
     }
+
     .category-section {
         margin-bottom: 2.5rem;
         padding: 1.2rem;
         background: #e3e8ff;
         border-radius: 10px;
         border: 2px solid #b3baf7;
-        box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
     }
+
     .category-section > h3 {
         font-size: 1.6em;
         color: #2a3a7a;
@@ -28,6 +30,7 @@
         cursor: pointer;
         user-select: none;
     }
+
     .subcategory-section {
         margin-bottom: 2rem;
         padding: 0.8rem 1rem;
@@ -35,6 +38,7 @@
         border-radius: 8px;
         border: 1.5px solid #c7d2fe;
     }
+
     .subcategory-section > h4 {
         font-size: 1.2em;
         color: #3a4ca7;
@@ -42,22 +46,25 @@
         font-weight: bold;
         letter-spacing: 0.5px;
     }
+
     .platos-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 1.5rem;
         margin-bottom: 1rem;
     }
+
     .plato-card {
         background: #fff;
         border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         padding: 1rem;
         display: flex;
         flex-direction: column;
         align-items: center;
         border: 1px solid #e0e0e0;
     }
+
     .plato-img {
         width: 120px;
         height: 120px;
@@ -66,34 +73,40 @@
         margin-bottom: 0.5rem;
         border: 2px solid #9ac7ff;
     }
+
     .plato-info {
         text-align: center;
     }
+
     .plato-price {
         font-weight: bold;
         color: #2a7;
         margin-top: 0.5em;
         display: block;
     }
+
     .category-content {
         transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
         max-height: 0;
     }
+
     .plato-inactivo {
         filter: grayscale(1);
         opacity: 0.6;
     }
+
     .modal-overlay {
         display: none;
         position: fixed;
         inset: 0;
         z-index: 10000;
         overflow: auto;
-        background-color: rgba(0,0,0,0.7);
+        background-color: rgba(0, 0, 0, 0.7);
         align-items: center;
         justify-content: center;
     }
+
     .modal {
         background-color: #fefefe;
         margin: 0;
@@ -102,11 +115,12 @@
         width: 90%;
         max-width: 500px;
         border-radius: 8px;
-        box-shadow: 0 6px 30px rgba(0,0,0,0.12);
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
         position: relative;
         display: flex;
         flex-direction: column;
     }
+
     .modal-header {
         padding: 15px;
         border-bottom: 1px solid #ddd;
@@ -114,11 +128,13 @@
         justify-content: space-between;
         align-items: center;
     }
+
     .modal-header h2 {
         margin: 0;
         font-size: 1.5em;
         color: #2a3a7a;
     }
+
     .modal-close {
         background: none;
         border: none;
@@ -126,23 +142,30 @@
         color: #aaa;
         cursor: pointer;
     }
+
     .modal-close:hover {
         color: black;
     }
+
     .modal-body {
         padding: 15px;
         display: flex;
         flex-direction: column;
     }
+
     .form-group {
         margin-bottom: 1rem;
     }
+
     .form-group label {
         margin-bottom: 0.5rem;
         font-weight: bold;
         color: #333;
     }
-    .form-group input,
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="file"],
     .form-group textarea {
         padding: 10px;
         border: 1px solid #ccc;
@@ -151,11 +174,29 @@
         width: 100%;
         box-sizing: border-box;
     }
+
+    .form-group input[type="checkbox"] {
+        width: auto;
+        display: inline-block;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+    }
+
+    .checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: normal;
+        color: #333;
+        cursor: pointer;
+    }
+
     .btn-group {
         display: flex;
         justify-content: flex-end;
         margin-top: 1rem;
     }
+
     .btn {
         padding: 10px 15px;
         border: none;
@@ -164,10 +205,12 @@
         font-size: 1em;
         margin-left: 10px;
     }
+
     .btn-success {
         background-color: #4CAF50;
         color: white;
     }
+
     .btn-danger {
         background-color: #f44336;
         color: white;
@@ -181,22 +224,29 @@
             <div th:if="${#lists.size(category.plates.?[subcategory == null]) > 0}" class="platos-grid">
                 <div th:each="plate : ${category.plates}" th:if="${plate.subcategory == null}">
                     <span sec:authorize="hasRole('COCINERO')">
-                        <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'" data-cocinero="true" th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                            <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato" class="plato-img"/>
+                        <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
+                             data-cocinero="true"
+                             th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
+                            <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}"
+                                 alt="Imagen del plato" class="plato-img"/>
                             <div class="plato-info">
                                 <h3 th:text="${plate.name}"></h3>
                                 <p th:text="${plate.description}"></p>
-                                <span class="plato-price">S/ <span th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
+                                <span class="plato-price">S/ <span
+                                        th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
                             </div>
                         </div>
                     </span>
                     <span sec:authorize="!hasRole('COCINERO')">
-                        <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'" th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                            <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato" class="plato-img"/>
+                        <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
+                             th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
+                            <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}"
+                                 alt="Imagen del plato" class="plato-img"/>
                             <div class="plato-info">
                                 <h3 th:text="${plate.name}"></h3>
                                 <p th:text="${plate.description}"></p>
-                                <span class="plato-price">S/ <span th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
+                                <span class="plato-price">S/ <span
+                                        th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
                             </div>
                         </div>
                     </span>
@@ -207,22 +257,31 @@
                 <div th:if="${#lists.size(subcategory.plates) > 0}" class="platos-grid">
                     <div th:each="plate : ${subcategory.plates}">
                         <span sec:authorize="hasRole('COCINERO')">
-                            <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'" data-cocinero="true" th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                                <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato" class="plato-img"/>
+                            <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
+                                 data-cocinero="true"
+                                 th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
+                                <img th:if="${plate.imageBase64}"
+                                     th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato"
+                                     class="plato-img"/>
                                 <div class="plato-info">
                                     <h3 th:text="${plate.name}"></h3>
                                     <p th:text="${plate.description}"></p>
-                                    <span class="plato-price">S/ <span th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
+                                    <span class="plato-price">S/ <span
+                                            th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
                                 </div>
                             </div>
                         </span>
                         <span sec:authorize="!hasRole('COCINERO')">
-                            <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'" th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                                <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato" class="plato-img"/>
+                            <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
+                                 th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
+                                <img th:if="${plate.imageBase64}"
+                                     th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato"
+                                     class="plato-img"/>
                                 <div class="plato-info">
                                     <h3 th:text="${plate.name}"></h3>
                                     <p th:text="${plate.description}"></p>
-                                    <span class="plato-price">S/ <span th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
+                                    <span class="plato-price">S/ <span
+                                            th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
                                 </div>
                             </div>
                         </span>
@@ -259,8 +318,10 @@
                     <input type="file" id="plateImage" name="image" accept="image/*">
                 </div>
                 <div class="form-group">
-                    <label for="plateActive">
-                        <input type="checkbox" id="plateActive" name="active"> Activo
+                    <!-- usar clase para que el checkbox y el texto queden alineados en la misma línea (texto primero, checkbox después) -->
+                    <label for="plateActive" class="checkbox-label">
+                        <span>Activo</span>
+                        <input type="checkbox" id="plateActive" name="active">
                     </label>
                 </div>
                 <div class="btn-group">

@@ -65,4 +65,9 @@ public class DashboardController {
         model.addAttribute("categories", categories);
         return "fragments/platos";
     }
+
+    @GetMapping("/mesas_fragment")
+    public String mesasFragment() {
+        return "fragments/mesas";
+    }
 }

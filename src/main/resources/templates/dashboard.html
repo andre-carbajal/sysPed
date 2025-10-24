@@ -24,6 +24,7 @@
     <!-- Navigation Tabs -->
     <div class="nav-tabs" id="navTabs">
         <div class="nav-tab" data-tab="personal" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Personal</div>
+        <div class="nav-tab" data-tab="mesas" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO')">Mesas</div>
         <div class="nav-tab" data-tab="platos" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO', 'ROLE_COCINERO')">Platos</div>
     </div>
 
@@ -68,6 +69,20 @@ navTabs && navTabs.addEventListener('click', function(e) {
                     }
                     if (typeof connectPlateStatusWebSocket === 'function') {
                         connectPlateStatusWebSocket();
+                    }
+                };
+                document.body.appendChild(script);
+            });
+    } else if (tabName === 'mesas') {
+        fetch('/dashboard/mesas_fragment')
+            .then(res => res.text())
+            .then(html => {
+                dynamicTabContent.innerHTML = html;
+                const script = document.createElement('script');
+                script.src = '/mesas.js';
+                script.onload = function() {
+                    if (typeof initMesasFromDOM === 'function') {
+                        initMesasFromDOM();
                     }
                 };
                 document.body.appendChild(script);

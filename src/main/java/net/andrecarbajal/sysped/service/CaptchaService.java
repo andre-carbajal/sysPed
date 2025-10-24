@@ -38,7 +38,7 @@ public class CaptchaService {
             g2d.drawLine(x1, y1, x2, y2);
         }
 
-        g2d.setFont(new Font("Arial", Font.BOLD, 36));
+        g2d.setFont(new Font("Consolas", Font.BOLD, 34));
         g2d.setColor(Color.BLACK);
         FontMetrics fm = g2d.getFontMetrics();
         int x = (width - fm.stringWidth(code)) / 2;

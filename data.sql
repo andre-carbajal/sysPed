@@ -3,7 +3,6 @@ INSERT INTO roles(name) VALUES ('administrador');
 INSERT INTO roles(name) VALUES ('mozo');
 INSERT INTO roles(name) VALUES ('cocinero');
 
-
 INSERT INTO staffs(name, password, dni, rol_id) VALUE ('Juan Perez', '$2a$10$4jjG.2p6YihIO6fJvRBIhu/c/MkktCruhtUxiuFzT1.iU78i26xBK', '00000000', 1);
 INSERT INTO staffs(name, password, dni, rol_id) VALUE ('Maria Gomez', '$2a$10$4jjG.2p6YihIO6fJvRBIhu/c/MkktCruhtUxiuFzT1.iU78i26xBK', '00000001', 2);
 INSERT INTO staffs(name, password, dni, rol_id) VALUE ('Carlos Lopez', '$2a$10$4jjG.2p6YihIO6fJvRBIhu/c/MkktCruhtUxiuFzT1.iU78i26xBK', '00000010', 3);
@@ -33,3 +32,23 @@ INSERT INTO plates (name, description, price, category_id, subcategory_id, activ
 INSERT INTO plates (name, description, price, category_id, subcategory_id, active) VALUES ('Jugo natural de naranja', 'Jugo natural recién exprimido', 8.00, 3, 6, true);
 INSERT INTO plates (name, description, price, category_id, subcategory_id, active) VALUES ('Promo 2x1 Lomo saltado', 'Promoción especial de lomo saltado', 40.00, 4, NULL, true);
 INSERT INTO plates (name, description, price, category_id, subcategory_id, active) VALUES ('Promo bebida gratis', 'Promoción de bebida gratis con menú', 0.00, 4, NULL, true);
+
+INSERT INTO tables (number, capacity, status) VALUES (1, 4, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (2, 4, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (3, 4, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (4, 2, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (5, 2, 'ESPERANDO_PEDIDO');
+INSERT INTO tables (number, capacity, status) VALUES (6, 4, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (7, 4, 'FALTA_ATENCION');
+INSERT INTO tables (number, capacity, status) VALUES (8, 6, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (9, 6, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (10, 4, 'PEDIDO_ENTREGADO');
+INSERT INTO tables (number, capacity, status) VALUES (11, 2, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (12, 2, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (13, 4, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (14, 4, 'FUERA_DE_SERVICIO');
+INSERT INTO tables (number, capacity, status) VALUES (15, 4, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (16, 8, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (17, 8, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (18, 4, 'DISPONIBLE');
+INSERT INTO tables (number, capacity, status) VALUES (19, 4, 'FUERA_DE_SERVICIO');

@@ -27,9 +27,7 @@ body { margin:0; background: var(--color-fondo-claro); color: var(--color-texto)
 /* Mesas */
 .mesas-panel { flex:1; display:flex; flex-direction:column; gap:12px; }
 .mesas-header { display:flex; justify-content:space-between; align-items:center; }
-.mesas-container { flex:1; display:flex; gap:16px; align-items:flex-start; overflow:auto; padding:10px; }
-.columna-mesas { display:flex; flex-direction:column; gap:12px; min-width:160px; }
-
+.mesas-container {flex: 1; overflow: auto; padding: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;}
 .mesa { background:white; border-radius:10px; padding:16px; text-align:center; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.08); display:flex; flex-direction:column; justify-content:center; align-items:center; height:110px; border:3px solid transparent; }
 .mesa-numero { font-size:1.4rem; font-weight:700; margin-bottom:6px; }
 .mesa-estado { font-size:0.85rem; color:white; padding:4px 8px; border-radius:999px; }
@@ -48,5 +46,4 @@ body { margin:0; background: var(--color-fondo-claro); color: var(--color-texto)
 @media (max-width:900px) {
     .wrap { flex-direction:column; padding:12px; }
     .sidebar { width:100%; }
-    .columna-mesas { min-width:120px; }
 }

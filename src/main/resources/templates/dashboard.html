@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Tradición Norteña - Dashboard</title>
     <link rel="stylesheet" th:href="@{/css/DashboardStyle.css}" href="/css/DashboardStyle.css">
     <link rel="stylesheet" th:href="@{/css/mesasStyle.css}" href="/css/mesasStyle.css">
@@ -34,62 +36,81 @@
 </div>
 
 <script>
-const navTabs = document.getElementById('navTabs');
-const dynamicTabContent = document.getElementById('dynamicTabContent');
-const navTabElements = document.querySelectorAll('.nav-tab');
+    const navTabs = document.getElementById('navTabs');
+    const dynamicTabContent = document.getElementById('dynamicTabContent');
+    const navTabElements = document.querySelectorAll('.nav-tab');
 
-navTabs && navTabs.addEventListener('click', function(e) {
-    const tab = e.target.closest('.nav-tab');
-    if (!tab) return;
-    const tabName = tab.getAttribute('data-tab');
-    navTabElements.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    if (tabName === 'personal') {
-        fetch('/dashboard/personal_fragment')
-            .then(res => res.text())
-            .then(html => {
-                dynamicTabContent.innerHTML = html;
-                const script = document.createElement('script');
-                script.src = '/js/personal.js';
-                script.onload = function() {
-                    if (typeof initPersonalTabEvents === 'function') {
-                        initPersonalTabEvents();
-                    }
-                };
-                document.body.appendChild(script);
-            });
-    } else if (tabName === 'platos') {
-        fetch('/dashboard/platos_fragment')
-            .then(res => res.text())
-            .then(html => {
-                dynamicTabContent.innerHTML = html;
-                const script = document.createElement('script');
-                script.src = '/js/platos.js';
-                script.onload = function() {
-                    if (typeof initPlatosTabEvents === 'function') {
-                        initPlatosTabEvents();
-                    }
-                    if (typeof connectPlateStatusWebSocket === 'function') {
-                        connectPlateStatusWebSocket();
-                    }
-                };
-                document.body.appendChild(script);
-            });
-    } else if (tabName === 'mesas') {
-        fetch('/dashboard/mesas_fragment')
-            .then(res => res.text())
-            .then(html => {
-                dynamicTabContent.innerHTML = html;
-                const script = document.createElement('script');
-                script.src = '/js/mesas.js';
-                script.onload = function() {
-                    if (typeof initMesasFromDOM === 'function') {
-                        initMesasFromDOM();
-                    }
-                };
-                document.body.appendChild(script);
-            });
+    function removeOldScript() {
+        const oldScript = document.getElementById('dynamic-tab-script');
+        if (oldScript) {
+            oldScript.remove();
+        }
     }
+
+    navTabs && navTabs.addEventListener('click', function(e) {
+        const tab = e.target.closest('.nav-tab');
+        if (!tab) return;
+        const tabName = tab.getAttribute('data-tab');
+        navTabElements.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        if (tabName === 'personal') {
+            removeOldScript();
+            fetch('/dashboard/personal_fragment')
+                .then(res => res.text())
+                .then(html => {
+                    dynamicTabContent.innerHTML = html;
+                    const script = document.createElement('script');
+                    script.id = 'dynamic-tab-script';
+                    script.src = '/js/personal.js';
+                    script.onload = function() {
+                        if (typeof initPersonalTabEvents === 'function') {
+                            initPersonalTabEvents();
+                        }
+                    };
+                    document.body.appendChild(script);
+                });
+
+        } else if (tabName === 'platos') {
+            removeOldScript();
+            fetch('/dashboard/platos_fragment')
+                .then(res => res.text())
+                .then(html => {
+                    dynamicTabContent.innerHTML = html;
+                    const script = document.createElement('script');
+                    script.id = 'dynamic-tab-script'
+                    script.src = '/js/platos.js';
+                    script.onload = function() {
+                        if (typeof initPlatosTabEvents === 'function') {
+                            initPlatosTabEvents();
+                        }
+                        if (typeof connectPlateStatusWebSocket === 'function') {
+                            connectPlateStatusWebSocket();
+                        }
+                    };
+                    document.body.appendChild(script);
+                });
+
+        } else if (tabName === 'mesas') {
+            removeOldScript();
+            fetch('/dashboard/mesas_fragment')
+                .then(res => res.text())
+                .then(html => {
+                    dynamicTabContent.innerHTML = html;
+                    const script = document.createElement('script');
+                    script.id = 'dynamic-tab-script';
+                    script.src = '/js/mesas.js';
+                    script.onload = function() {
+                        setTimeout(() => {
+                            if (typeof initMesasFromDOM === 'function') initMesasFromDOM();
+                            if (typeof initMesaClickEvents === 'function') initMesaClickEvents();
+                            if (typeof connectTableWebSocket === 'function') connectTableWebSocket();
+                            if (typeof actualizarResumen === 'function') actualizarResumen();
+                        }, 0); // 0 milisegundos es suficiente
+                    };
+                    document.body.appendChild(script);
+                });
+        }
 });
 
 </script>

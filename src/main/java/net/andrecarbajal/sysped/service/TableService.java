@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.model.Table;
 import net.andrecarbajal.sysped.model.TableStatus;
 import net.andrecarbajal.sysped.repository.TableRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import net.andrecarbajal.sysped.dto.TableResponseDto;
-import net.andrecarbajal.sysped.dto.TableStatusUpdateDto;
 import net.andrecarbajal.sysped.dto.TableSummaryDto;
 
 import java.util.List;
@@ -17,8 +16,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TableService {
 
-    @Autowired
-    private TableRepository tableRepository;
+    private final TableRepository tableRepository;
+
+    private final SimpMessagingTemplate messagingTemplate;
 
     // Método para el grid de mesas
     public List<TableResponseDto> getOperativeTables() {
@@ -28,18 +28,33 @@ public class TableService {
                 .collect(Collectors.toList());
     }
 
+    // Método para el resumen del sidebar
+    public TableSummaryDto getTableSummary() {
+
+        long libres = tableRepository.countByStatus(TableStatus.DISPONIBLE);
+        long esperando = tableRepository.countByStatus(TableStatus.ESPERANDO_PEDIDO);
+        long falta = tableRepository.countByStatus(TableStatus.FALTA_ATENCION);
+        long entregado = tableRepository.countByStatus(TableStatus.PEDIDO_ENTREGADO);
+
+        return new TableSummaryDto(libres, esperando, falta, entregado);
+    }
+
     // Método para que el mozo actualice el estado
-    public TableResponseDto updateTableStatus(Integer tableNumber, TableStatusUpdateDto updateDTO) {
+    public TableResponseDto updateTableStatus(Integer tableNumber, TableStatus newStatus) {
+
         Table table = tableRepository.findByNumber(tableNumber)
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada: " + tableNumber));
 
-        table.setStatus(updateDTO.newStatus());
+        table.setStatus(newStatus);
         Table updatedTable = tableRepository.save(table);
 
-        return convertToDTO(updatedTable);
+        TableResponseDto dto = convertToDTO(updatedTable);
+
+        messagingTemplate.convertAndSend("/topic/table-status", dto);
+
+        return dto;
     }
 
-    // Helper privado para mapear
     private TableResponseDto convertToDTO(Table table) {
         return new TableResponseDto(table.getNumber(), table.getStatus());
     }

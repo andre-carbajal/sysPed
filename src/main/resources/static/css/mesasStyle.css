@@ -15,7 +15,6 @@ body { margin:0; background: var(--color-fondo-claro); color: var(--color-texto)
 
 .wrap { display:flex; height:100vh; gap:20px; padding:20px; }
 
-/* Resumen lateral */
 .sidebar { width: 320px; background:white; border:1px solid var(--color-borde); padding:16px; border-radius:8px; }
 .sidebar h3 { margin-bottom:12px; }
 .status-item { display:flex; justify-content:space-between; padding:10px; margin-bottom:8px; border-radius:6px; background:var(--color-gris); }
@@ -24,7 +23,6 @@ body { margin:0; background: var(--color-fondo-claro); color: var(--color-texto)
 .status-amarillo { background: rgba(255,193,7,0.12); }
 .status-rojo { background: rgba(244,67,54,0.12); }
 
-/* Mesas */
 .mesas-panel { flex:1; display:flex; flex-direction:column; gap:12px; }
 .mesas-header { display:flex; justify-content:space-between; align-items:center; }
 .mesas-container {flex: 1; overflow: auto; padding: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;}
@@ -42,6 +40,12 @@ body { margin:0; background: var(--color-fondo-claro); color: var(--color-texto)
 .mesa-amarillo { border-color: var(--color-amarillo); }
 .mesa-rojo { border-color: var(--color-rojo); }
 .mesa-gris { border-color: #9e9e9e; }
+
+.toast-container { position: fixed; top: 16px; right: 16px; z-index: 2000; display:flex; flex-direction:column; gap:8px; }
+.toast { background: rgba(0,0,0,0.8); color: white; padding: 10px 14px; border-radius: 6px; min-width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 0.95rem; }
+.toast.error { background: #e74c3c; }
+.toast.info { background: #2c3e50; }
+.toast.fade-out { opacity: 0; transition: opacity 0.4s ease; }
 
 @media (max-width:900px) {
     .wrap { flex-direction:column; padding:12px; }

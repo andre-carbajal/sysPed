@@ -1,13 +1,30 @@
 let stompClientMesas = null;
+let isStompConnected = false;
 
 function connectTableWebSocket() {
     const socket = new SockJS('/ws');
     stompClientMesas = Stomp.over(socket);
     stompClientMesas.connect({}, function () {
+        isStompConnected = true;
         stompClientMesas.subscribe('/topic/table-status', function (message) {
             const tableDTO = JSON.parse(message.body);
             updateTableInView(tableDTO);
         });
+        stompClientMesas.subscribe('/user/queue/errors', function (message) {
+            const payload = message.body;
+            if (payload) {
+                showToast('Error: ' + payload);
+            }
+        });
+        stompClientMesas.subscribe('/topic/table-errors', function (message) {
+            const payload = message.body;
+            if (payload) {
+                showToast('Error: ' + payload);
+            }
+        });
+    }, function (error) {
+        console.warn('Error connecting STOMP:', error);
+        isStompConnected = false;
     });
 }
 
@@ -22,37 +39,30 @@ function updateTableInView(tableDTO) {
 function initMesaClickEvents() {
     document.querySelectorAll('.mesa').forEach(el => {
         el.addEventListener('click', function () {
-            const nuevoEstado = prompt("Nuevo estado (DISPONIBLE, OCUPADO, ESPERANDO_PEDIDO, FALTA_ATENCION, PEDIDO_ENTREGADO, FUERA_DE_SERVICIO):");
-
-            if (nuevoEstado) {
-                const tableNumber = el.getAttribute('data-numero');
-                sendTableUpdate(tableNumber, nuevoEstado.toUpperCase());
-            }
+            openTableStatusModal(el);
         });
     });
 }
 
 function sendTableUpdate(tableNumber, newStatus) {
-    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-    fetch('/dashboard/mesas/update-status', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            [header]: token
-        },
-        body: body
-    })
-        .then(response => response.text())
-        .then(result => {
-            if (result !== 'OK') {
-                alert(result);
+    if (typeof stompClientMesas !== 'undefined' && isStompConnected) {
+        try {
+            const payloadObj = {tableNumber: parseInt(tableNumber, 10), status: newStatus};
+            const payload = JSON.stringify(payloadObj);
+            stompClientMesas.send('/app/mesas/update-status', {}, payload);
+            const el = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+            if (el) {
+                actualizarVistaMesa(el, newStatus);
+                actualizarResumen();
             }
-        })
-        .catch(() => {
-            alert('Error de red al actualizar la mesa.');
-        });
+            closeTableStatusModal();
+        } catch (e) {
+            console.error('Error sending via STOMP:', e);
+            showToast('No se pudo enviar la actualización via WebSocket. Por favor recarga la página e intenta de nuevo.');
+        }
+    } else {
+        showToast('Conexión en tiempo real no disponible. Por favor recarga la página para reintentar.');
+    }
 }
 
 function actualizarResumen() {
@@ -62,17 +72,21 @@ function actualizarResumen() {
     const countAm = mesasEls.filter(el => el.classList.contains('mesa-amarillo')).length;
     const countR = mesasEls.filter(el => el.classList.contains('mesa-rojo')).length;
 
-    document.getElementById('countVerde').textContent = countV;
-    document.getElementById('countAzul').textContent = countA;
-    document.getElementById('countAmarillo').textContent = countAm;
-    document.getElementById('countRojo').textContent = countR;
+    const elVerde = document.getElementById('countVerde');
+    const elAzul = document.getElementById('countAzul');
+    const elAmar = document.getElementById('countAmarillo');
+    const elRojo = document.getElementById('countRojo');
+
+    if (elVerde) elVerde.textContent = countV;
+    if (elAzul) elAzul.textContent = countA;
+    if (elAmar) elAmar.textContent = countAm;
+    if (elRojo) elRojo.textContent = countR;
 }
 
 function initMesasFromDOM() {
     document.querySelectorAll('.mesa').forEach(el => {
         if (!el.dataset.estado) el.dataset.estado = 'gris';
 
-        const estado = el.dataset.estado;
         const statusEnum = el.getAttribute('data-status-enum');
 
         if (statusEnum) {
@@ -81,6 +95,7 @@ function initMesasFromDOM() {
             actualizarVistaMesa(el, 'FUERA_DE_SERVICIO');
         }
     });
+    actualizarResumen();
 }
 
 function actualizarVistaMesa(mesaElement, statusEnum) {
@@ -115,6 +130,91 @@ function actualizarVistaMesa(mesaElement, statusEnum) {
     }
 
     mesaElement.classList.add(claseColor);
-    mesaElement.querySelector('.mesa-estado').textContent = textoEstado;
+    const estadoEl = mesaElement.querySelector('.mesa-estado');
+    if (estadoEl) estadoEl.textContent = textoEstado;
     mesaElement.setAttribute('data-status-enum', statusEnum);
+}
+
+function openTableStatusModal(mesaElement) {
+    const overlay = document.getElementById('tableStatusModal');
+    if (!overlay) return;
+
+    const tableNumber = mesaElement.getAttribute('data-numero');
+    const titleNumberSpan = overlay.querySelector('.modal-title-table-number');
+    const hiddenInput = document.getElementById('modalTableNumberInput');
+
+    if (titleNumberSpan) titleNumberSpan.textContent = tableNumber;
+    if (hiddenInput) hiddenInput.value = tableNumber;
+
+    const currentStatus = mesaElement.getAttribute('data-status-enum') || 'FUERA_DE_SERVICIO';
+    overlay.querySelectorAll('.status-button').forEach(btn => {
+        if (btn.dataset.status === currentStatus) {
+            btn.classList.add('selected-status');
+        } else {
+            btn.classList.remove('selected-status');
+        }
+    });
+
+    overlay.style.display = 'flex';
+}
+
+function closeTableStatusModal() {
+    const overlay = document.getElementById('tableStatusModal');
+    if (!overlay) return;
+    overlay.style.display = 'none';
+
+    overlay.querySelectorAll('.status-button').forEach(btn => btn.classList.remove('selected-status'));
+}
+
+function initModalEvents() {
+    const overlay = document.getElementById('tableStatusModal');
+    if (!overlay) return;
+
+    const closeBtn = document.getElementById('closeTableStatusModal');
+    const cancelarBtn = document.getElementById('cancelarTableStatus');
+
+    if (closeBtn) closeBtn.addEventListener('click', closeTableStatusModal);
+    if (cancelarBtn) cancelarBtn.addEventListener('click', closeTableStatusModal);
+
+    overlay.addEventListener('click', function (event) {
+        if (event.target === overlay) closeTableStatusModal();
+    });
+
+    overlay.querySelectorAll('.status-button').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const status = btn.dataset.status;
+            const tableNumber = document.getElementById('modalTableNumberInput').value;
+            if (!tableNumber || !status) return;
+            sendTableUpdate(tableNumber, status);
+        });
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+        initMesasFromDOM();
+        initMesaClickEvents();
+        initModalEvents();
+    });
+} else {
+    initMesasFromDOM();
+    initMesaClickEvents();
+    initModalEvents();
+}
+
+function showToast(message, type = 'error', duration = 5000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) {
+        alert(message);
+        return;
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 500);
+    }, duration);
 }

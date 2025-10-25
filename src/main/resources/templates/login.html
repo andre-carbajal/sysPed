@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tradición Norteña - Login</title>
-    <link rel="stylesheet" th:href="@{/css/DashboardStyle.css}" href="/css/DashboardStyle.css">
+    <link rel="stylesheet" th:href="@{/css/dashboardStyle.css}" href="/css/DashboardStyle.css">
 </head>
 <body>
 <div class="login-container" id="loginSection">
@@ -39,7 +39,7 @@
         fetch('/captcha/refresh', {
             method: 'POST',
             headers: {
-                'Content-Type': 'js/application/json'
+                'Content-Type': 'application/json'
             }
         }).then(function() {
             const timestamp = new Date().getTime();

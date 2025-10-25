@@ -74,7 +74,7 @@
                 .then(html => {
                     dynamicTabContent.innerHTML = html;
                     const script = document.createElement('script');
-                    script.id = 'dynamic-tab-script'
+                    script.id = 'dynamic-tab-script';
                     script.src = '/js/platos.js';
                     script.onload = function() {
                         if (typeof initPlatosTabEvents === 'function') {
@@ -102,12 +102,12 @@
                             if (typeof initMesaClickEvents === 'function') initMesaClickEvents();
                             if (typeof connectTableWebSocket === 'function') connectTableWebSocket();
                             if (typeof actualizarResumen === 'function') actualizarResumen();
-                        }, 0); // 0 milisegundos es suficiente
+                        }, 0);
                     };
                     document.body.appendChild(script);
                 });
         }
-});
+    });
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

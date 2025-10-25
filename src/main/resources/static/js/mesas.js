@@ -21,7 +21,7 @@ function updateTableInView(tableDTO) {
 
 function initMesaClickEvents() {
     document.querySelectorAll('.mesa').forEach(el => {
-        el.addEventListener('click', function() {
+        el.addEventListener('click', function () {
             const nuevoEstado = prompt("Nuevo estado (DISPONIBLE, OCUPADO, ESPERANDO_PEDIDO, FALTA_ATENCION, PEDIDO_ENTREGADO, FUERA_DE_SERVICIO):");
 
             if (nuevoEstado) {
@@ -53,8 +53,9 @@ function sendTableUpdate(tableNumber, newStatus) {
         .catch(() => {
             alert('Error de red al actualizar la mesa.');
         });
+}
 
-    function actualizarResumen() {
+function actualizarResumen() {
     const mesasEls = Array.from(document.querySelectorAll('.mesa'));
     const countV = mesasEls.filter(el => el.classList.contains('mesa-verde')).length;
     const countA = mesasEls.filter(el => el.classList.contains('mesa-azul')).length;
@@ -116,5 +117,4 @@ function actualizarVistaMesa(mesaElement, statusEnum) {
     mesaElement.classList.add(claseColor);
     mesaElement.querySelector('.mesa-estado').textContent = textoEstado;
     mesaElement.setAttribute('data-status-enum', statusEnum);
-    }
 }

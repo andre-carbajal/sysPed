@@ -27,8 +27,9 @@ public class SecurityConfig {
         http
                 .addFilterBefore(captchaValidationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/**.css", "/**.js").permitAll()
+                        .requestMatchers("/css/**.css", "/jss/**.js").permitAll()
                         .requestMatchers("/captcha/**").permitAll()
+                        .requestMatchers("/ws/**", "/topic/**", "/user/**").permitAll()
                         .requestMatchers("/dashboard/**").authenticated()
                         .requestMatchers("/dashboard/staff/**").hasAnyRole("ADMINISTRADOR", "JEFE")
                         .requestMatchers("/dashboard/plate/set-active").hasRole("COCINERO")

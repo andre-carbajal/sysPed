@@ -7,6 +7,7 @@ import net.andrecarbajal.sysped.model.Staff;
 import net.andrecarbajal.sysped.service.CategoryService;
 import net.andrecarbajal.sysped.service.RolService;
 import net.andrecarbajal.sysped.service.StaffService;
+import net.andrecarbajal.sysped.service.TableService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,7 @@ public class DashboardController {
     private final StaffService staffService;
     private final RolService rolService;
     private final CategoryService categoryService;
+    private final TableService tableService;
 
     @GetMapping
     public String dashboard(Model model) {
@@ -67,7 +69,9 @@ public class DashboardController {
     }
 
     @GetMapping("/mesas_fragment")
-    public String mesasFragment() {
+    public String mesasFragment(Model model) {
+        model.addAttribute("listaDeMesas", tableService.getOperativeTables());
+        model.addAttribute("resumenMesas", tableService.getTableSummary());
         return "fragments/mesas";
     }
 }

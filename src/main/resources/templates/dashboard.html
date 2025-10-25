@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tradición Norteña - Dashboard</title>
-    <link rel="stylesheet" th:href="@{/style.css}" href="/style.css">
+    <link rel="stylesheet" th:href="@{/css/DashboardStyle.css}" href="/css/DashboardStyle.css">
+    <link rel="stylesheet" th:href="@{/css/mesasStyle.css}" href="/css/mesasStyle.css">
+    <link rel="stylesheet" th:href="@{/css/platosStyle.css}" href="/css/platosStyle.css">
 </head>
 <body>
 <div class="app-container" id="appSection">
@@ -48,7 +50,7 @@ navTabs && navTabs.addEventListener('click', function(e) {
             .then(html => {
                 dynamicTabContent.innerHTML = html;
                 const script = document.createElement('script');
-                script.src = '/personal.js';
+                script.src = '/js/personal.js';
                 script.onload = function() {
                     if (typeof initPersonalTabEvents === 'function') {
                         initPersonalTabEvents();
@@ -62,7 +64,7 @@ navTabs && navTabs.addEventListener('click', function(e) {
             .then(html => {
                 dynamicTabContent.innerHTML = html;
                 const script = document.createElement('script');
-                script.src = '/platos.js';
+                script.src = '/js/platos.js';
                 script.onload = function() {
                     if (typeof initPlatosTabEvents === 'function') {
                         initPlatosTabEvents();
@@ -79,7 +81,7 @@ navTabs && navTabs.addEventListener('click', function(e) {
             .then(html => {
                 dynamicTabContent.innerHTML = html;
                 const script = document.createElement('script');
-                script.src = '/mesas.js';
+                script.src = '/js/mesas.js';
                 script.onload = function() {
                     if (typeof initMesasFromDOM === 'function') {
                         initMesasFromDOM();

@@ -15,7 +15,7 @@ function initializeCrearPedido() {
 }
 
 function addCrearPedidoEventListeners() {
-    const btnVolver = document.getElementById('btnVolver');
+    const btnVolver = document.getElementById('btnVolverAMesas');
     if (btnVolver) {
         btnVolver.addEventListener('click', volverAVistaMesas);
     }

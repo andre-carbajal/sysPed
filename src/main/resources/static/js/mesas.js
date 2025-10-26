@@ -279,7 +279,7 @@ function showToast(message, type = 'error', duration = 5000) {
 }
 
 function closeCombinedModal() {
-    const modal = document.getElementById('tableActionModal');
+    const modal = document.getElementById('tableCombinedModal');
     if (modal) { modal.style.display = 'none'; }
 }
 

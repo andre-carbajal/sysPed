@@ -47,6 +47,11 @@ body { margin:0; background: var(--color-fondo-claro); color: var(--color-texto)
 .toast.info { background: #2c3e50; }
 .toast.fade-out { opacity: 0; transition: opacity 0.4s ease; }
 
+.combined-button-grid{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: stretch; }
+.combined-button-grid .action-button { grid-column: span 1;}
+.combined-button-grid .status-button { grid-column: span 1; display: flex; justify-content: center; align-items: center; }
+.status-button.selected-status { border-width: 3px; background-color: rgba(0, 0, 0, 0.05); }
+
 @media (max-width:900px) {
     .wrap { flex-direction:column; padding:12px; }
     .sidebar { width:100%; }

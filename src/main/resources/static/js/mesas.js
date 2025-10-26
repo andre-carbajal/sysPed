@@ -70,7 +70,7 @@ function initMesaClickEvents() {
     mesasGrid._mesasClickHandler = function(e) {
         const mesa = e.target.closest('.mesa');
         if (mesa) {
-            openTableActionModal(mesa);
+            openCombinedModal(mesa);
         }
     };
 
@@ -88,7 +88,7 @@ function sendTableUpdate(tableNumber, newStatus) {
                 actualizarVistaMesa(el, newStatus);
                 actualizarResumen();
             }
-            closeTableStatusModal();
+            closeCombinedModal();
         } catch (e) {
             console.error('Error sending via STOMP:', e);
             showToast('No se pudo enviar la actualización via WebSocket. Por favor recarga la página e intenta de nuevo.');
@@ -168,85 +168,74 @@ function actualizarVistaMesa(mesaElement, statusEnum) {
     mesaElement.setAttribute('data-status-enum', statusEnum);
 }
 
-function openTableStatusModal(mesaElement) {
-    const overlay = document.getElementById('tableStatusModal');
-    if (!overlay) return;
+function initCombinedModalEvents() {
+    const modal = document.getElementById('tableCombinedModal');
+    if (!modal) return;
 
-    const tableNumber = mesaElement.getAttribute('data-numero');
-    const titleNumberSpan = overlay.querySelector('.modal-title-table-number');
-    const hiddenInput = document.getElementById('modalTableNumberInput');
+    const closeBtn = document.getElementById('closeTableCombinedModal');
+    const cancelarBtn = document.getElementById('cancelarTableCombined');
+    const createBtn = document.getElementById('btnIrCrearPedido');
 
-    if (titleNumberSpan) titleNumberSpan.textContent = tableNumber;
-    if (hiddenInput) hiddenInput.value = tableNumber;
-
-    const currentStatus = mesaElement.getAttribute('data-status-enum') || 'FUERA_DE_SERVICIO';
-    overlay.querySelectorAll('.status-button').forEach(btn => {
-        if (btn.dataset.status === currentStatus) {
-            btn.classList.add('selected-status');
-        } else {
-            btn.classList.remove('selected-status');
-        }
-    });
-
-    overlay.style.display = 'flex';
-}
-
-function closeTableStatusModal() {
-    const overlay = document.getElementById('tableStatusModal');
-    if (!overlay) return;
-    overlay.style.display = 'none';
-
-    overlay.querySelectorAll('.status-button').forEach(btn => btn.classList.remove('selected-status'));
-}
-
-function initMesaModalEvents() {
-    const overlay = document.getElementById('tableStatusModal');
-    if (!overlay) return;
-
-    const closeBtn = document.getElementById('closeTableStatusModal');
-    const cancelarBtn = document.getElementById('cancelTableStatus');
-
-    if (closeBtn && closeBtn._closeHandler) {
-        closeBtn.removeEventListener('click', closeBtn._closeHandler);
+    if (closeBtn && closeBtn._handler) {
+        closeBtn.removeEventListener('click', closeBtn._handler);
     }
-    if (cancelarBtn && cancelarBtn._cancelHandler) {
-        cancelarBtn.removeEventListener('click', cancelarBtn._cancelHandler);
+    if (cancelarBtn && cancelarBtn._handler) {
+        cancelarBtn.removeEventListener('click', cancelarBtn._handler);
     }
-    if (overlay._overlayClickHandler) {
-        overlay.removeEventListener('click', overlay._overlayClickHandler);
+    if (modal && modal._overlayHandler) {
+        modal.removeEventListener('click', modal._overlayHandler);
     }
-    if (overlay._statusButtonHandler) {
-        overlay.removeEventListener('click', overlay._statusButtonHandler);
+    if (createBtn && createBtn._handler) {
+        createBtn.removeEventListener('click', createBtn._handler);
+    }
+
+    const grid = modal.querySelector('.combined-button-grid');
+    if (grid && grid._statusHandler) {
+        grid.removeEventListener('click', grid._statusHandler);
     }
 
     if (closeBtn) {
-        closeBtn._closeHandler = closeTableStatusModal;
-        closeBtn.addEventListener('click', closeBtn._closeHandler);
+        closeBtn._handler = closeCombinedModal;
+        closeBtn.addEventListener('click', closeBtn._handler);
     }
 
     if (cancelarBtn) {
-        cancelarBtn._cancelHandler = closeTableStatusModal;
-        cancelarBtn.addEventListener('click', cancelarBtn._cancelHandler);
+        cancelarBtn._handler = closeCombinedModal;
+        cancelarBtn.addEventListener('click', cancelarBtn._handler);
+    }
+    if (modal) {
+        modal._overlayHandler = function (e) {
+            if (e.target === modal) {
+                closeCombinedModal();
+            }
+        };
+        modal.addEventListener('click', modal._overlayHandler);
     }
 
-    overlay._overlayClickHandler = function(event) {
-        if (event.target === overlay) {
-            closeTableStatusModal();
-        }
-    };
-    overlay.addEventListener('click', overlay._overlayClickHandler);
+    if (createBtn) {
+        createBtn._handler = function () {
+            const tableNumber = modal.querySelector('#modalCombinedTableNumber').value;
+            const mesaElement = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+            if (mesaElement) openCreateOrderModal(mesaElement);
+            closeCombinedModal();
+        };
+        createBtn.addEventListener('click', createBtn._handler);
+    }
 
-    overlay._statusButtonHandler = function(event) {
-        const btn = event.target.closest('.status-button');
-        if (btn) {
-            const status = btn.dataset.status;
-            const tableNumber = document.getElementById('modalTableNumberInput').value;
-            if (tableNumber && status) {
-                sendTableUpdate(tableNumber, status);
+    if (grid) {
+        grid._statusHandler = function (e) {
+            const btn = e.target.closest('.status-button');
+            if (btn) {
+                const status = btn.dataset.status;
+                const tableNumber = modal.querySelector('#modalCombinedTableNumber').value;
+                if (tableNumber && status) {
+                    sendTableUpdate(tableNumber, status);
+                    closeCombinedModal();
+                }
             }
-        }
-    };
-    overlay.addEventListener('click', overlay._statusButtonHandler);
+        };
+        grid.addEventListener('click', grid._statusHandler);
+    }
 }
 
 function cleanupMesas() {
@@ -256,9 +245,7 @@ function cleanupMesas() {
 function initializeMesas() {
     initMesasFromDOM();
     initMesaClickEvents();
-    initMesaModalEvents();
-    initMesaModalEvents();
-    initTableActionModalEvents();
+    initCombinedModalEvents();
     mesasInitialized = true;
 }
 
@@ -291,23 +278,21 @@ function showToast(message, type = 'error', duration = 5000) {
     }, duration);
 }
 
-function closeTableActionModal() {
+function closeCombinedModal() {
     const modal = document.getElementById('tableActionModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
+    if (modal) { modal.style.display = 'none'; }
 }
 
-function openTableActionModal(mesaElement) {
+function openCombinedModal(mesaElement) {
     const tableNumber = mesaElement.getAttribute('data-numero');
     const status = mesaElement.getAttribute('data-status-enum');
 
-    const modal = document.getElementById('tableActionModal');
+    const modal = document.getElementById('tableCombinedModal');
 
     modal.querySelector('.modal-title-table-number').textContent = tableNumber;
-    modal.querySelector('#modalActionTableNumber').value = tableNumber;
+    modal.querySelector('#modalCombinedTableNumber').value = tableNumber;
 
-    const btnCreateOrder = document.getElementById('btnGoCreateOrder');
+    const btnCreateOrder = document.getElementById('btnIrCrearPedido');
     if (status === 'FUERA_DE_SERVICIO') {
         btnCreateOrder.style.display = 'none';
     } else {
@@ -317,35 +302,11 @@ function openTableActionModal(mesaElement) {
     modal.style.display = 'flex';
 }
 
-function initTableActionModalEvents() {
-    const modal = document.getElementById('tableActionModal');
-    if (!modal) return;
+function openCreateOrderModal(mesaElement) {
 
-    document.getElementById('closeTableActionModal')?.addEventListener('click', closeTableActionModal);
-    document.getElementById('cancelTableAction')?.addEventListener('click', closeTableActionModal);
-    document.getElementById('btnGoChangeStatus')?.addEventListener('click', function() {
-        const tableNumber = document.getElementById('modalActionTableNumber').value;
-        const mesaElement = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+    if (!mesaElement) return;
 
-        if (mesaElement) openTableStatusModal(mesaElement);
-        closeTableActionModal();
-    });
-
-    document.getElementById('btnGoCreateOrder')?.addEventListener('click', function() {
-        const tableNumber = document.getElementById('modalActionTableNumber').value;
-        const mesaElement = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
-
-        if (mesaElement) openCreateOrderModal(tableNumber);
-        closeTableActionModal();
-    });
-}
-
-function openCreateOrderModal(tableNumber) {
-
-    const tableElement = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
-    if (!tableElement) return;
-
-    const tableId = tableElement.getAttribute('data-id');
+    const tableId = mesaElement.getAttribute('data-id');
     if (!tableId) return;
 
     const dynamicTabContent = document.getElementById('dynamicTabContent');

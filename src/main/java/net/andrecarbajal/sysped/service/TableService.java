@@ -20,15 +20,13 @@ public class TableService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    // Método para el grid de mesas
     public List<TableResponseDto> getOperativeTables() {
-        List<Table> tables = tableRepository.findAllByStatusNot(TableStatus.FUERA_DE_SERVICIO);
+        List<Table> tables = tableRepository.findAll();
         return tables.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Método para el resumen del sidebar
     public TableSummaryDto getTableSummary() {
 
         long libres = tableRepository.countByStatus(TableStatus.DISPONIBLE);
@@ -39,7 +37,6 @@ public class TableService {
         return new TableSummaryDto(libres, esperando, falta, entregado);
     }
 
-    // Método para que el mozo actualice el estado
     public TableResponseDto updateTableStatus(Integer tableNumber, TableStatus newStatus) {
 
         Table table = tableRepository.findByNumber(tableNumber)

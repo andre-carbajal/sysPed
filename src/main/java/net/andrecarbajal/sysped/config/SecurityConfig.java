@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/css/**.css", "/jss/**.js").permitAll()
                         .requestMatchers("/captcha/**").permitAll()
+                        .requestMatchers("/login", "/login?error=*").permitAll()
                         .requestMatchers("/ws/**", "/topic/**", "/user/**").permitAll()
                         .requestMatchers("/dashboard/**").authenticated()
                         .requestMatchers("/dashboard/staff/**").hasAnyRole("ADMINISTRADOR", "JEFE")
@@ -39,6 +40,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
+                        .failureUrl("/login?error=credentials")
                         .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
                 )

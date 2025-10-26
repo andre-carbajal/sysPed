@@ -49,9 +49,18 @@
     }
 
     window.addEventListener('DOMContentLoaded', function() {
-        const hasError = document.querySelector('.error-message');
-        if (hasError && hasError.textContent.trim() !== "") {
+        const errorMessage = document.querySelector('.error-message');
+
+        if (errorMessage && errorMessage.textContent.trim() !== "") {
             setTimeout(window.refreshCaptcha, 100);
+
+            setTimeout(function() {
+                errorMessage.style.transition = 'opacity 0.5s ease-out';
+                errorMessage.style.opacity = '0';
+                setTimeout(function() {
+                    errorMessage.style.display = 'none';
+                }, 500);
+            }, 5000);
         }
     });
 </script>

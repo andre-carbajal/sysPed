@@ -22,8 +22,10 @@ public class LoginController {
         if (error != null) {
             if ("captcha".equals(error)) {
                 model.addAttribute("error", "Captcha incorrecto");
-            } else {
+            } else if ("credentials".equals(error)) {
                 model.addAttribute("error", "Usuario o contraseña incorrectos");
+            } else {
+                model.addAttribute("error", "Error de autenticación");
             }
         }
         return "login";

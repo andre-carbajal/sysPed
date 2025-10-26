@@ -22,8 +22,8 @@ public class StaffDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String dni) throws UsernameNotFoundException {
-        Staff appStaff = staffRepository.findByDni(dni)
-                .orElseThrow(() -> new UsernameNotFoundException("Staff not found: " + dni));
+        Staff appStaff = staffRepository.findByDniAndActiveTrue(dni)
+                .orElseThrow(() -> new UsernameNotFoundException("Staff not found or inactive: " + dni));
 
         return new User(appStaff.getDni(),
                 appStaff.getPassword(),

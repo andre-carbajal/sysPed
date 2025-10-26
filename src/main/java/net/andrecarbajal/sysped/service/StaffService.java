@@ -4,9 +4,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.dto.StaffCreateRequestDto;
 import net.andrecarbajal.sysped.dto.StaffEditRequestDto;
+import net.andrecarbajal.sysped.exception.EntityNotFound;
 import net.andrecarbajal.sysped.model.Rol;
 import net.andrecarbajal.sysped.model.Staff;
-import net.andrecarbajal.sysped.exception.EntityNotFound;
 import net.andrecarbajal.sysped.repository.StaffRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,24 +22,39 @@ public class StaffService {
 
     @Transactional
     public void createStaff(StaffCreateRequestDto dto, Rol rol) {
-        if (existStaffByDni(dto.dni())) {
-            throw new IllegalArgumentException("Ya existe un usuario con el DNI " + dto.dni());
+        Optional<Staff> existingStaff = staffRepository.findByDni(dto.dni());
+
+        Staff staff;
+        if (existingStaff.isPresent()) {
+            staff = existingStaff.get();
+            if (staff.getActive()) {
+                throw new IllegalArgumentException("Ya existe un usuario activo con el DNI " + dto.dni());
+            }
+            staff.setActive(true);
+            staff.setName(dto.name());
+            staff.setPassword(passwordEncoder.encode(dto.password()));
+            staff.setRol(rol);
+        } else {
+            staff = new Staff();
+            staff.setDni(dto.dni());
+            staff.setName(dto.name());
+            staff.setPassword(passwordEncoder.encode(dto.password()));
+            staff.setRol(rol);
+            staff.setActive(true);
         }
-        Staff staff = new Staff();
-        staff.setDni(dto.dni());
-        staff.setName(dto.name());
-        staff.setPassword(passwordEncoder.encode(dto.password()));
-        staff.setRol(rol);
         staffRepository.save(staff);
     }
 
     @Transactional
-    public void deleteStaffByDni(String dni) {
-        staffRepository.deleteById(dni);
+    public void deleteStaffByDni(String dni) throws EntityNotFound {
+        Staff staff = staffRepository.findByDni(dni)
+                .orElseThrow(() -> new EntityNotFound("Staff no encontrado"));
+        staff.setActive(false);
+        staffRepository.save(staff);
     }
 
     public boolean existStaffByDni(String dni) {
-        return staffRepository.existsById(dni);
+        return staffRepository.findByDniAndActiveTrue(dni).isPresent();
     }
 
     @Transactional
@@ -55,7 +70,7 @@ public class StaffService {
     }
 
     public List<Staff> findAllStaff() {
-        return staffRepository.findAll();
+        return staffRepository.findByActiveTrue();
     }
 
     public Optional<Staff> findStaffByDni(String dni) {

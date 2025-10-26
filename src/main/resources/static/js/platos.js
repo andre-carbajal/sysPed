@@ -28,57 +28,77 @@ function initPlatosTabEvents() {
 }
 
 function initPlatoCardToggleEvents() {
-    document.querySelectorAll('.plato-card').forEach(function(card) {
-        card.addEventListener('click', function() {
-            const isCocinero = card.hasAttribute('data-cocinero');
-            const plateId = card.getAttribute('data-plate-id');
+    const body = document.body;
 
-            if (isCocinero) {
-                const currentActive = card.getAttribute('data-active') === 'true';
-                const newActive = !currentActive;
-                if (!confirm('¿Deseas guardar el cambio?')) {
-                    return;
-                }
-                card.style.pointerEvents = 'none';
-                fetch('/dashboard/plate/set-active', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `plateId=${plateId}&active=${newActive}`
-                })
-                .then(response => response.text())
-                .then(result => {
-                    if (result === 'OK') {
-                        card.setAttribute('data-active', newActive);
-                        if (newActive) {
-                            card.classList.remove('plato-inactivo');
-                        } else {
-                            card.classList.add('plato-inactivo');
-                        }
-                    } else {
-                        alert(result);
-                    }
-                    card.style.pointerEvents = '';
-                })
-                .catch(() => {
-                    alert('Error de red');
-                    card.style.pointerEvents = '';
-                });
-            } else {
-                openUpdatePlateModal(card);
+    if (body._platoCardHandler) {
+        body.removeEventListener('click', body._platoCardHandler);
+    }
+
+    body._platoCardHandler = function(e) {
+        const card = e.target.closest('.plato-card');
+        if (!card) return;
+
+        const isCocinero = card.hasAttribute('data-cocinero');
+        const plateId = card.getAttribute('data-plate-id');
+
+        if (isCocinero) {
+            const currentActive = card.getAttribute('data-active') === 'true';
+            const newActive = !currentActive;
+            if (!confirm('¿Deseas guardar el cambio?')) {
+                return;
             }
-        });
-    });
+            card.style.pointerEvents = 'none';
+            fetch('/dashboard/plate/set-active', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `plateId=${plateId}&active=${newActive}`
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result === 'OK') {
+                    card.setAttribute('data-active', newActive);
+                    if (newActive) {
+                        card.classList.remove('plato-inactivo');
+                    } else {
+                        card.classList.add('plato-inactivo');
+                    }
+                } else {
+                    alert(result);
+                }
+                card.style.pointerEvents = '';
+            })
+            .catch(() => {
+                alert('Error de red');
+                card.style.pointerEvents = '';
+            });
+        } else {
+            openUpdatePlateModal(card);
+        }
+    };
+
+    body.addEventListener('click', body._platoCardHandler);
 }
 
 // --- WebSocket para actualización en tiempo real de platos ---
 let stompClient = null;
+let isPlateStompConnected = false;
+let platosInitialized = false;
 
 function connectPlateStatusWebSocket() {
+    if (stompClient !== null && isPlateStompConnected) {
+        try {
+            stompClient.disconnect();
+        } catch (e) {
+            console.warn('Error al desconectar WebSocket anterior:', e);
+        }
+    }
+
     const socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function () {
+        isPlateStompConnected = true;
         stompClient.subscribe('/topic/plate-status', function (message) {
             const plate = JSON.parse(message.body);
             updatePlateStatusInView(plate);
@@ -87,7 +107,24 @@ function connectPlateStatusWebSocket() {
             const plate = JSON.parse(message.body);
             updatePlateInView(plate);
         });
+    }, function (error) {
+        console.warn('Error connecting STOMP:', error);
+        isPlateStompConnected = false;
     });
+}
+
+function disconnectPlateStatusWebSocket() {
+    if (stompClient !== null && isPlateStompConnected) {
+        try {
+            stompClient.disconnect(function() {
+                console.log('WebSocket de platos desconectado');
+            });
+            isPlateStompConnected = false;
+            stompClient = null;
+        } catch (e) {
+            console.warn('Error al desconectar WebSocket:', e);
+        }
+    }
 }
 
 function updatePlateStatusInView(plate) {
@@ -158,34 +195,69 @@ function updatePlateInView(plate) {
     }
 }
 
-window.addEventListener('DOMContentLoaded', function() {
-    connectPlateStatusWebSocket();
-});
+
+function cleanupPlatos() {
+    platosInitialized = false;
+}
+
+function initializePlatos() {
+    initPlatosTabEvents();
+    initPlatoCardToggleEvents();
+    initPlatoModalEvents();
+    platosInitialized = true;
+}
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-        initPlatosTabEvents();
-        initPlatoCardToggleEvents();
-        initModalEvents();
-    });
-} else {
-    initPlatosTabEvents();
-    initPlatoCardToggleEvents();
-    initModalEvents();
-}
-
-function initModalEvents() {
-    document.getElementById('closeUpdatePlateModal').addEventListener('click', closeUpdatePlateModal);
-    document.getElementById('cancelUpdate').addEventListener('click', closeUpdatePlateModal);
-    document.getElementById('updatePlateModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeUpdatePlateModal();
+        if (!platosInitialized) {
+            initializePlatos();
         }
     });
-    document.getElementById('updatePlateForm').addEventListener('submit', function(event) {
+} else {
+    if (!platosInitialized) {
+        initializePlatos();
+    }
+}
+
+function initPlatoModalEvents() {
+    const closeBtn = document.getElementById('closeUpdatePlateModal');
+    const cancelBtn = document.getElementById('cancelUpdate');
+    const modal = document.getElementById('updatePlateModal');
+    const form = document.getElementById('updatePlateForm');
+
+    if (!closeBtn || !cancelBtn || !modal || !form) return;
+
+    if (closeBtn._closeHandler) {
+        closeBtn.removeEventListener('click', closeBtn._closeHandler);
+    }
+    if (cancelBtn._cancelHandler) {
+        cancelBtn.removeEventListener('click', cancelBtn._cancelHandler);
+    }
+    if (modal._modalClickHandler) {
+        modal.removeEventListener('click', modal._modalClickHandler);
+    }
+    if (form._submitHandler) {
+        form.removeEventListener('submit', form._submitHandler);
+    }
+
+    closeBtn._closeHandler = closeUpdatePlateModal;
+    closeBtn.addEventListener('click', closeBtn._closeHandler);
+
+    cancelBtn._cancelHandler = closeUpdatePlateModal;
+    cancelBtn.addEventListener('click', cancelBtn._cancelHandler);
+
+    modal._modalClickHandler = function(event) {
+        if (event.target === modal) {
+            closeUpdatePlateModal();
+        }
+    };
+    modal.addEventListener('click', modal._modalClickHandler);
+
+    form._submitHandler = function(event) {
         event.preventDefault();
         savePlateUpdate();
-    });
+    };
+    form.addEventListener('submit', form._submitHandler);
 }
 
 function savePlateUpdate() {

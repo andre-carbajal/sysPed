@@ -1,75 +1,24 @@
-<style>
-    :root {
-        --color-verde: #4CAF50;
-        --color-azul: #2196F3;
-        --color-amarillo: #FFC107;
-        --color-rojo: #F44336;
-        --color-gris: #f5f5f5;
-        --color-borde: #ddd;
-        --color-texto: #333;
-        --color-fondo-claro: #ecf0f1;
-        --color-fondo-oscuro: #2c3e50;
-    }
-
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { margin:0; background: var(--color-fondo-claro); color: var(--color-texto); }
-
-    .wrap { display:flex; height:100vh; gap:20px; padding:20px; }
-
-    /* Resumen lateral */
-    .sidebar { width: 320px; background:white; border:1px solid var(--color-borde); padding:16px; border-radius:8px; }
-    .sidebar h3 { margin-bottom:12px; }
-    .status-item { display:flex; justify-content:space-between; padding:10px; margin-bottom:8px; border-radius:6px; background:var(--color-gris); }
-    .status-verde { background: rgba(76,175,80,0.12); }
-    .status-azul { background: rgba(33,150,243,0.12); }
-    .status-amarillo { background: rgba(255,193,7,0.12); }
-    .status-rojo { background: rgba(244,67,54,0.12); }
-
-    /* Mesas */
-    .mesas-panel { flex:1; display:flex; flex-direction:column; gap:12px; }
-    .mesas-header { display:flex; justify-content:space-between; align-items:center; }
-    .mesas-container { flex:1; display:flex; gap:16px; align-items:flex-start; overflow:auto; padding:10px; }
-    .columna-mesas { display:flex; flex-direction:column; gap:12px; min-width:160px; }
-
-    .mesa { background:white; border-radius:10px; padding:16px; text-align:center; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.08); display:flex; flex-direction:column; justify-content:center; align-items:center; height:110px; border:3px solid transparent; }
-    .mesa-numero { font-size:1.4rem; font-weight:700; margin-bottom:6px; }
-    .mesa-estado { font-size:0.85rem; color:white; padding:4px 8px; border-radius:999px; }
-    .estado-verde { background:var(--color-verde); }
-    .estado-azul { background:var(--color-azul); }
-    .estado-amarillo { background:var(--color-amarillo); color:#111; }
-    .estado-rojo { background:var(--color-rojo); }
-    .estado-gris { background:#9e9e9e; }
-
-    .mesa-azul { border-color: var(--color-azul); }
-    .mesa-verde { border-color: var(--color-verde); }
-    .mesa-amarillo { border-color: var(--color-amarillo); }
-    .mesa-rojo { border-color: var(--color-rojo); }
-    .mesa-gris { border-color: #9e9e9e; }
-
-    @media (max-width:900px) {
-        .wrap { flex-direction:column; padding:12px; }
-        .sidebar { width:100%; }
-        .columna-mesas { min-width:120px; }
-    }
-</style>
-<div class="wrap">
+<head>
+    <link rel="stylesheet" th:href="@{/css/mesasStyle.css}" href="/css/mesasStyle.css">
+</head>
+<div class="wrap" th:fragment="mesasView">
     <aside class="sidebar">
         <h3>Resumen de Estados</h3>
         <div class="status-item status-verde">
             <span>Mesas Libres</span>
-            <span id="countVerde">0</span>
+            <span id="countVerde" th:text="${resumenMesas.countLibres}">0</span>
         </div>
         <div class="status-item status-azul">
             <span>Esperando Pedido</span>
-            <span id="countAzul">0</span>
+            <span id="countAzul" th:text="${resumenMesas.countEsperandoPedido}">0</span>
         </div>
         <div class="status-item status-amarillo">
             <span>Falta Atención</span>
-            <span id="countAmarillo">0</span>
+            <span id="countAmarillo" th:text="${resumenMesas.countFaltaAtencion}">0</span>
         </div>
         <div class="status-item status-rojo">
             <span>Pedido Entregado</span>
-            <span id="countRojo">0</span>
+            <span id="countRojo" th:text="${resumenMesas.countPedidoEntregado}">0</span>
         </div>
 
         <hr style="margin:14px 0; border:none; border-top:1px solid var(--color-borde);">
@@ -80,97 +29,51 @@
 
     <main class="mesas-panel">
         <div class="mesas-container" id="mesasGrid">
-            <!-- Mesas estáticas (ya no se agregan con JS). Por defecto aparecen en gris) -->
-            <div class="columna-mesas">
-                <div class="mesa mesa-gris" data-numero="3" data-estado="gris">
-                    <div class="mesa-numero">3</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="2" data-estado="gris">
-                    <div class="mesa-numero">2</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="1" data-estado="gris">
-                    <div class="mesa-numero">1</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-            </div>
+            <div th:each="mesaDTO : ${listaDeMesas}"
+                 class="mesa"
+                 th:attr="data-numero=${mesaDTO.number}, data-status-enum=${mesaDTO.status}">
 
-            <div class="columna-mesas">
-                <div class="mesa mesa-gris" data-numero="7" data-estado="gris">
-                    <div class="mesa-numero">7</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="6" data-estado="gris">
-                    <div class="mesa-numero">6</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="5" data-estado="gris">
-                    <div class="mesa-numero">5</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="4" data-estado="gris">
-                    <div class="mesa-numero">4</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-            </div>
-
-            <div class="columna-mesas">
-                <div class="mesa mesa-gris" data-numero="12" data-estado="gris">
-                    <div class="mesa-numero">12</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="11" data-estado="gris">
-                    <div class="mesa-numero">11</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="10" data-estado="gris">
-                    <div class="mesa-numero">10</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="9" data-estado="gris">
-                    <div class="mesa-numero">9</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="8" data-estado="gris">
-                    <div class="mesa-numero">8</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-            </div>
-
-            <div class="columna-mesas">
-                <div class="mesa mesa-gris" data-numero="16" data-estado="gris">
-                    <div class="mesa-numero">16</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="15" data-estado="gris">
-                    <div class="mesa-numero">15</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="14" data-estado="gris">
-                    <div class="mesa-numero">14</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="13" data-estado="gris">
-                    <div class="mesa-numero">13</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-            </div>
-
-            <div class="columna-mesas">
-                <div class="mesa mesa-gris" data-numero="17" data-estado="gris">
-                    <div class="mesa-numero">17</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="18" data-estado="gris">
-                    <div class="mesa-numero">18</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
-                <div class="mesa mesa-gris" data-numero="19" data-estado="gris">
-                    <div class="mesa-numero">19</div>
-                    <div class="mesa-estado estado-gris">Sin estado</div>
-                </div>
+                <div class="mesa-numero" th:text="${mesaDTO.number}">?</div>
+                <div class="mesa-estado">Cargando...</div>
             </div>
         </div>
     </main>
+
+    <div class="modal-overlay" id="tableStatusModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="tableStatusModalTitle">Cambiar Estado: Mesa N° <span class="modal-title-table-number">?</span></h2>
+                <button class="modal-close" id="closeTableStatusModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalTableNumberInput" value="">
+
+                <p>Selecciona el nuevo estado para la mesa.</p>
+
+                <div class="status-button-grid">
+                    <button class="status-button" data-status="DISPONIBLE">
+                        <span>Libre</span>
+                    </button>
+                    <button class="status-button" data-status="ESPERANDO_PEDIDO">
+                        <span>Esperando Pedido</span>
+                    </button>
+                    <button class="status-button" data-status="FALTA_ATENCION">
+                        <span>Falta Atención</span>
+                    </button>
+                    <button class="status-button" data-status="PEDIDO_ENTREGADO">
+                        <span>Pedido Entregado</span>
+                    </button>
+                    <button class="status-button status-button-gris" data-status="FUERA_DE_SERVICIO">
+                        <span>Fuera de Servicio</span>
+                    </button>
+                </div>
+
+                <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-danger" id="cancelarTableStatus">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 </div>

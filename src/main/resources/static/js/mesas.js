@@ -70,7 +70,7 @@ function initMesaClickEvents() {
     mesasGrid._mesasClickHandler = function(e) {
         const mesa = e.target.closest('.mesa');
         if (mesa) {
-            openTableStatusModal(mesa);
+            openTableActionModal(mesa);
         }
     };
 
@@ -204,7 +204,7 @@ function initMesaModalEvents() {
     if (!overlay) return;
 
     const closeBtn = document.getElementById('closeTableStatusModal');
-    const cancelarBtn = document.getElementById('cancelarTableStatus');
+    const cancelarBtn = document.getElementById('cancelTableStatus');
 
     if (closeBtn && closeBtn._closeHandler) {
         closeBtn.removeEventListener('click', closeBtn._closeHandler);
@@ -257,6 +257,8 @@ function initializeMesas() {
     initMesasFromDOM();
     initMesaClickEvents();
     initMesaModalEvents();
+    initMesaModalEvents();
+    initTableActionModalEvents();
     mesasInitialized = true;
 }
 
@@ -287,4 +289,82 @@ function showToast(message, type = 'error', duration = 5000) {
         toast.classList.add('fade-out');
         setTimeout(() => toast.remove(), 500);
     }, duration);
+}
+
+function closeTableActionModal() {
+    const modal = document.getElementById('tableActionModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function openTableActionModal(mesaElement) {
+    const tableNumber = mesaElement.getAttribute('data-numero');
+    const status = mesaElement.getAttribute('data-status-enum');
+
+    const modal = document.getElementById('tableActionModal');
+
+    modal.querySelector('.modal-title-table-number').textContent = tableNumber;
+    modal.querySelector('#modalActionTableNumber').value = tableNumber;
+
+    const btnCreateOrder = document.getElementById('btnGoCreateOrder');
+    if (status === 'FUERA_DE_SERVICIO') {
+        btnCreateOrder.style.display = 'none';
+    } else {
+        btnCreateOrder.style.display = 'flex';
+    }
+
+    modal.style.display = 'flex';
+}
+
+function initTableActionModalEvents() {
+    const modal = document.getElementById('tableActionModal');
+    if (!modal) return;
+
+    document.getElementById('closeTableActionModal')?.addEventListener('click', closeTableActionModal);
+    document.getElementById('cancelTableAction')?.addEventListener('click', closeTableActionModal);
+    document.getElementById('btnGoChangeStatus')?.addEventListener('click', function() {
+        const tableNumber = document.getElementById('modalActionTableNumber').value;
+        const mesaElement = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+
+        if (mesaElement) openTableStatusModal(mesaElement);
+        closeTableActionModal();
+    });
+
+    document.getElementById('btnGoCreateOrder')?.addEventListener('click', function() {
+        const tableNumber = document.getElementById('modalActionTableNumber').value;
+        const mesaElement = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+
+        if (mesaElement) openCreateOrderModal(tableNumber);
+        closeTableActionModal();
+    });
+}
+
+function openCreateOrderModal(tableNumber) {
+
+    const tableElement = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+    if (!tableElement) return;
+
+    const tableId = tableElement.getAttribute('data-id');
+    if (!tableId) return;
+
+    const dynamicTabContent = document.getElementById('dynamicTabContent');
+    if (!dynamicTabContent) return;
+
+    fetch(`/dashboard/crear_pedido_fragment?tableId=${tableId}`)
+        .then(response => response.text())
+        .then(html => {
+            dynamicTabContent.innerHTML = html;
+
+            const oldScript = document.getElementById('dynamic-tab-script');
+            if (oldScript) oldScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'dynamic-tab-script';
+            script.src = '/js/crear_pedido.js';
+            if (typeof disconnectTableWebSocket === 'function') {
+                disconnectTableWebSocket();
+            }
+            document.body.appendChild(script);
+        });
 }

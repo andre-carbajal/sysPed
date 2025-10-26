@@ -53,6 +53,6 @@ public class TableService {
     }
 
     private TableResponseDto convertToDTO(Table table) {
-        return new TableResponseDto(table.getNumber(), table.getStatus());
+        return new TableResponseDto(table.getId(), table.getNumber(), table.getStatus());
     }
 }

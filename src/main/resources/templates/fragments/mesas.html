@@ -31,13 +31,44 @@
         <div class="mesas-container" id="mesasGrid">
             <div th:each="mesaDTO : ${listaDeMesas}"
                  class="mesa"
-                 th:attr="data-numero=${mesaDTO.number}, data-status-enum=${mesaDTO.status}">
+                 th:attr="data-id=${mesaDTO.id}, data-numero=${mesaDTO.number}, data-status-enum=${mesaDTO.status}">
 
                 <div class="mesa-numero" th:text="${mesaDTO.number}">?</div>
                 <div class="mesa-estado">Cargando...</div>
             </div>
         </div>
     </main>
+
+    <div class="modal-overlay" id="tableActionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="tableActionModalTitle">Mesa N° <span class="modal-title-table-number">?</span></h2>
+                <button class="modal-close" id="closeTableActionModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalActionTableNumber" value="">
+
+                <p>Selecciona una acción para esta mesa.</p>
+
+                <div class="action-button-grid">
+
+                    <button class="action-button action-button-primary" id="btnGoCreateOrder">
+                        <span class="action-button-icon">📝</span>
+                        <span>Crear Pedido</span>
+                    </button>
+
+                    <button class="action-button" id="btnGoChangeTableStatus">
+                        <span class="action-button-icon">🔄</span>
+                        <span>Cambiar Estado</span>
+                    </button>
+                </div>
+
+                <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-danger" id="cancelTableAction">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="tableStatusModal">
         <div class="modal">
@@ -69,7 +100,7 @@
                 </div>
 
                 <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
-                    <button type="button" class="btn btn-danger" id="cancelarTableStatus">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="cancelTableStatus">Cancelar</button>
                 </div>
             </div>
         </div>

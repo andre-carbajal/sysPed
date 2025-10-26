@@ -4,16 +4,14 @@ import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.model.Category;
 import net.andrecarbajal.sysped.model.Rol;
 import net.andrecarbajal.sysped.model.Staff;
-import net.andrecarbajal.sysped.service.CategoryService;
-import net.andrecarbajal.sysped.service.RolService;
-import net.andrecarbajal.sysped.service.StaffService;
-import net.andrecarbajal.sysped.service.TableService;
+import net.andrecarbajal.sysped.service.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +24,7 @@ public class DashboardController {
     private final RolService rolService;
     private final CategoryService categoryService;
     private final TableService tableService;
+    private final PlateService plateService;
 
     @GetMapping
     public String dashboard(Model model) {
@@ -36,6 +35,21 @@ public class DashboardController {
                 .orElse("Unknown User");
         model.addAttribute("staff_name", staff_name);
         return "dashboard";
+    }
+
+    @GetMapping("/crear_pedido_fragment")
+    public String crearPedidoFragment(@RequestParam Long tableId, Model model) {
+        var tableDto = tableService.getOperativeTables().stream()
+                .filter(m -> m.id().equals(tableId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
+
+        var categorias = categoryService.findAllCategories();
+
+        model.addAttribute("table", tableDto);
+        model.addAttribute("categorias", categorias);
+
+        return "fragments/crear_pedido";
     }
 
     @GetMapping("/personal_fragment")
@@ -63,7 +77,7 @@ public class DashboardController {
 
     @GetMapping("/platos_fragment")
     public String platosFragment(Model model) {
-        List<Category> categories = categoryService.findAllCategories();
+        List<Category> categories = categoryService.findAllCategoriesWithPlates();
         model.addAttribute("categories", categories);
         return "fragments/platos";
     }

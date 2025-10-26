@@ -15,4 +15,8 @@ public class CategoryService {
     public List<Category> findAllCategories() {
         return this.categoryRepository.findAll();
     }
+
+    public List<Category> findAllCategoriesWithPlates() {
+        return this.categoryRepository.findAllCategoriesWithPlates();
+    }
 }

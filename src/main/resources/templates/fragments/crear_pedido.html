@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div class="crear-pedido-container" th:fragment="crearPedidoView">
+
+    <div class="crear-pedido-header">
+        <h2>
+            Creando Pedido para Mesa N° <span th:text="${mesa.number}">?</span>
+        </h2>
+        <button id="btnVolverAMesas" class="btn btn-secondary">Volver a Mesas</button>
+    </div>
+
+    <input type="hidden" id="pedidoTableId" th:value="${mesa.id}">
+
+    <div id="contenedorDePlatos" class="menu-platos-grid">
+
+        <div th:each="categoria : ${categorias}" class="categoria-section">
+            <h3 class="categoria-titulo" th:text="${categoria.name}">Nombre Categoría</h3>
+
+            <div class="platos-en-categoria">
+
+                <div th:each="plato : ${categoria.plates}"
+                     th:if="${plato.active}" class="item-plato-menu" th:attr="data-plate-id=${plato.id}"> <div class="plato-info">
+                    <span class="plato-nombre" th:text="${plato.name}">Nombre del Plato</span>
+                    <span class="plato-precio" th:text="'S/ ' + ${#numbers.formatDecimal(plato.price, 1, 'COMMA', 2, 'POINT')}">S/ 0.00</span>
+                </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="pedido-actions">
+        <div class="seleccion-info">
+            Platos Seleccionados: <span id="contadorPlatosSeleccionados">0</span>
+        </div>
+        <button id="btnEnviarPedido" class="btn btn-success">Enviar Pedido a Cocina</button>
+    </div>
+
+</div> </body>
+</html>

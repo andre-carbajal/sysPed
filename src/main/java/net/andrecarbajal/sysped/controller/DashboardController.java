@@ -46,7 +46,7 @@ public class DashboardController {
 
         var categorias = categoryService.findAllCategories();
 
-        model.addAttribute("table", tableDto);
+        model.addAttribute("mesa", tableDto);
         model.addAttribute("categorias", categorias);
 
         return "fragments/crear_pedido";

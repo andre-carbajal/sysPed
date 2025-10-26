@@ -1,7 +1,16 @@
 let stompClientMesas = null;
 let isStompConnected = false;
+let mesasInitialized = false;
 
 function connectTableWebSocket() {
+    if (stompClientMesas !== null && isStompConnected) {
+        try {
+            stompClientMesas.disconnect();
+        } catch (e) {
+            console.warn('Error al desconectar WebSocket anterior:', e);
+        }
+    }
+
     const socket = new SockJS('/ws');
     stompClientMesas = Stomp.over(socket);
     stompClientMesas.connect({}, function () {
@@ -28,6 +37,20 @@ function connectTableWebSocket() {
     });
 }
 
+function disconnectTableWebSocket() {
+    if (stompClientMesas !== null && isStompConnected) {
+        try {
+            stompClientMesas.disconnect(function() {
+                console.log('WebSocket de mesas desconectado');
+            });
+            isStompConnected = false;
+            stompClientMesas = null;
+        } catch (e) {
+            console.warn('Error al desconectar WebSocket:', e);
+        }
+    }
+}
+
 function updateTableInView(tableDTO) {
     const mesaElement = document.querySelector(`.mesa[data-numero="${tableDTO.number}"]`);
     if (mesaElement) {
@@ -37,11 +60,21 @@ function updateTableInView(tableDTO) {
 }
 
 function initMesaClickEvents() {
-    document.querySelectorAll('.mesa').forEach(el => {
-        el.addEventListener('click', function () {
-            openTableStatusModal(el);
-        });
-    });
+    const mesasGrid = document.getElementById('mesasGrid');
+    if (!mesasGrid) return;
+
+    if (mesasGrid._mesasClickHandler) {
+        mesasGrid.removeEventListener('click', mesasGrid._mesasClickHandler);
+    }
+
+    mesasGrid._mesasClickHandler = function(e) {
+        const mesa = e.target.closest('.mesa');
+        if (mesa) {
+            openTableStatusModal(mesa);
+        }
+    };
+
+    mesasGrid.addEventListener('click', mesasGrid._mesasClickHandler);
 }
 
 function sendTableUpdate(tableNumber, newStatus) {
@@ -166,40 +199,77 @@ function closeTableStatusModal() {
     overlay.querySelectorAll('.status-button').forEach(btn => btn.classList.remove('selected-status'));
 }
 
-function initModalEvents() {
+function initMesaModalEvents() {
     const overlay = document.getElementById('tableStatusModal');
     if (!overlay) return;
 
     const closeBtn = document.getElementById('closeTableStatusModal');
     const cancelarBtn = document.getElementById('cancelarTableStatus');
 
-    if (closeBtn) closeBtn.addEventListener('click', closeTableStatusModal);
-    if (cancelarBtn) cancelarBtn.addEventListener('click', closeTableStatusModal);
+    if (closeBtn && closeBtn._closeHandler) {
+        closeBtn.removeEventListener('click', closeBtn._closeHandler);
+    }
+    if (cancelarBtn && cancelarBtn._cancelHandler) {
+        cancelarBtn.removeEventListener('click', cancelarBtn._cancelHandler);
+    }
+    if (overlay._overlayClickHandler) {
+        overlay.removeEventListener('click', overlay._overlayClickHandler);
+    }
+    if (overlay._statusButtonHandler) {
+        overlay.removeEventListener('click', overlay._statusButtonHandler);
+    }
 
-    overlay.addEventListener('click', function (event) {
-        if (event.target === overlay) closeTableStatusModal();
-    });
+    if (closeBtn) {
+        closeBtn._closeHandler = closeTableStatusModal;
+        closeBtn.addEventListener('click', closeBtn._closeHandler);
+    }
 
-    overlay.querySelectorAll('.status-button').forEach(btn => {
-        btn.addEventListener('click', function () {
+    if (cancelarBtn) {
+        cancelarBtn._cancelHandler = closeTableStatusModal;
+        cancelarBtn.addEventListener('click', cancelarBtn._cancelHandler);
+    }
+
+    overlay._overlayClickHandler = function(event) {
+        if (event.target === overlay) {
+            closeTableStatusModal();
+        }
+    };
+    overlay.addEventListener('click', overlay._overlayClickHandler);
+
+    overlay._statusButtonHandler = function(event) {
+        const btn = event.target.closest('.status-button');
+        if (btn) {
             const status = btn.dataset.status;
             const tableNumber = document.getElementById('modalTableNumberInput').value;
-            if (!tableNumber || !status) return;
-            sendTableUpdate(tableNumber, status);
-        });
-    });
+            if (tableNumber && status) {
+                sendTableUpdate(tableNumber, status);
+            }
+        }
+    };
+    overlay.addEventListener('click', overlay._statusButtonHandler);
+}
+
+function cleanupMesas() {
+    mesasInitialized = false;
+}
+
+function initializeMesas() {
+    initMesasFromDOM();
+    initMesaClickEvents();
+    initMesaModalEvents();
+    mesasInitialized = true;
 }
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-        initMesasFromDOM();
-        initMesaClickEvents();
-        initModalEvents();
+        if (!mesasInitialized) {
+            initializeMesas();
+        }
     });
 } else {
-    initMesasFromDOM();
-    initMesaClickEvents();
-    initModalEvents();
+    if (!mesasInitialized) {
+        initializeMesas();
+    }
 }
 
 function showToast(message, type = 'error', duration = 5000) {

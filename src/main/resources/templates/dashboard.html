@@ -23,9 +23,14 @@
 
     <!-- Navigation Tabs -->
     <div class="nav-tabs" id="navTabs">
-        <div class="nav-tab" data-tab="personal" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Personal</div>
-        <div class="nav-tab" data-tab="mesas" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO')">Mesas</div>
-        <div class="nav-tab" data-tab="platos" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO', 'ROLE_COCINERO')">Platos</div>
+        <div class="nav-tab" data-tab="personal" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Personal
+        </div>
+        <div class="nav-tab" data-tab="mesas" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO')">
+            Mesas
+        </div>
+        <div class="nav-tab" data-tab="platos"
+             sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO', 'ROLE_COCINERO')">Platos
+        </div>
     </div>
 
     <div id="dynamicTabContent"></div>
@@ -43,12 +48,29 @@
         }
     }
 
-    navTabs && navTabs.addEventListener('click', function(e) {
+    function cleanupWebSockets() {
+        if (typeof disconnectTableWebSocket === 'function') {
+            disconnectTableWebSocket();
+        }
+        if (typeof disconnectPlateStatusWebSocket === 'function') {
+            disconnectPlateStatusWebSocket();
+        }
+        if (typeof cleanupMesas === 'function') {
+            cleanupMesas();
+        }
+        if (typeof cleanupPlatos === 'function') {
+            cleanupPlatos();
+        }
+    }
+
+    navTabs && navTabs.addEventListener('click', function (e) {
         const tab = e.target.closest('.nav-tab');
         if (!tab) return;
         const tabName = tab.getAttribute('data-tab');
         navTabElements.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
+
+        cleanupWebSockets();
 
         if (tabName === 'personal') {
             removeOldScript();
@@ -59,7 +81,7 @@
                     const script = document.createElement('script');
                     script.id = 'dynamic-tab-script';
                     script.src = '/js/personal.js';
-                    script.onload = function() {
+                    script.onload = function () {
                         if (typeof initPersonalTabEvents === 'function') {
                             initPersonalTabEvents();
                         }
@@ -77,8 +99,8 @@
                     script.id = 'dynamic-tab-script';
                     script.src = '/js/platos.js';
                     script.onload = function() {
-                        if (typeof initPlatosTabEvents === 'function') {
-                            initPlatosTabEvents();
+                        if (typeof initializePlatos === 'function') {
+                            initializePlatos();
                         }
                         if (typeof connectPlateStatusWebSocket === 'function') {
                             connectPlateStatusWebSocket();
@@ -96,13 +118,13 @@
                     const script = document.createElement('script');
                     script.id = 'dynamic-tab-script';
                     script.src = '/js/mesas.js';
-                    script.onload = function() {
-                        setTimeout(() => {
-                            if (typeof initMesasFromDOM === 'function') initMesasFromDOM();
-                            if (typeof initMesaClickEvents === 'function') initMesaClickEvents();
-                            if (typeof connectTableWebSocket === 'function') connectTableWebSocket();
-                            if (typeof actualizarResumen === 'function') actualizarResumen();
-                        }, 0);
+                    script.onload = function () {
+                        if (typeof initializeMesas === 'function') {
+                            initializeMesas();
+                        }
+                        if (typeof connectTableWebSocket === 'function') {
+                            connectTableWebSocket();
+                        }
                     };
                     document.body.appendChild(script);
                 });

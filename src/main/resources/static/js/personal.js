@@ -41,12 +41,16 @@ function initPersonalTabEvents() {
 
             if (soloLectura) {
                 rolSelect.style.display = 'none';
+                rolSelect.removeAttribute('name');
                 rolReadonly.style.display = '';
                 rolReadonly.value = rolValue;
+                rolHidden.setAttribute('name', 'rolName');
                 rolHidden.value = rolValue;
             } else {
                 rolSelect.style.display = '';
+                rolSelect.setAttribute('name', 'rolName');
                 rolReadonly.style.display = 'none';
+                rolHidden.removeAttribute('name');
                 rolHidden.value = '';
                 if (rolSelect) {
                     rolSelect.value = rolValue;

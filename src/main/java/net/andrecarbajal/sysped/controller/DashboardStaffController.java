@@ -3,7 +3,6 @@ package net.andrecarbajal.sysped.controller;
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.dto.StaffCreateRequestDto;
 import net.andrecarbajal.sysped.dto.StaffEditRequestDto;
-import net.andrecarbajal.sysped.exception.EntityNotFound;
 import net.andrecarbajal.sysped.service.StaffService;
 import net.andrecarbajal.sysped.model.Rol;
 import net.andrecarbajal.sysped.service.RolService;
@@ -56,11 +55,12 @@ public class DashboardStaffController {
             return "redirect:/dashboard";
         }
         try {
-            Rol rol = this.rolService.findRolByName(staffEditRequestDto.rolName());
+            Rol rol = this.rolService.findRolByName(staffEditRequestDto.rolName())
+                    .orElseThrow(() -> new IllegalArgumentException("El rol no existe."));
             this.staffService.updateStaff(staffEditRequestDto, rol);
             redirectAttributes.addFlashAttribute("success", "Datos del personal actualizados correctamente.");
-        } catch (EntityNotFound e) {
-            redirectAttributes.addFlashAttribute("error", "No se encontró el usuario a editar o el rol no existe.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
         }
@@ -74,11 +74,10 @@ public class DashboardStaffController {
             return "redirect:/dashboard";
         }
         try {
-            Rol rol = this.rolService.findRolByName(staffCreateRequestDto.rolName());
+            Rol rol = this.rolService.findRolByName(staffCreateRequestDto.rolName())
+                    .orElseThrow(() -> new IllegalArgumentException("El rol no existe."));
             this.staffService.createStaff(staffCreateRequestDto, rol);
             redirectAttributes.addFlashAttribute("success", "Personal creado correctamente.");
-        } catch (EntityNotFound e) {
-            redirectAttributes.addFlashAttribute("error", "Rol no encontrado.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {

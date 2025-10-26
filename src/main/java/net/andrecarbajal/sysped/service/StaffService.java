@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.dto.StaffCreateRequestDto;
 import net.andrecarbajal.sysped.dto.StaffEditRequestDto;
-import net.andrecarbajal.sysped.exception.EntityNotFound;
 import net.andrecarbajal.sysped.model.Rol;
 import net.andrecarbajal.sysped.model.Staff;
 import net.andrecarbajal.sysped.repository.StaffRepository;
@@ -46,9 +45,9 @@ public class StaffService {
     }
 
     @Transactional
-    public void deleteStaffByDni(String dni) throws EntityNotFound {
+    public void deleteStaffByDni(String dni) {
         Staff staff = staffRepository.findByDni(dni)
-                .orElseThrow(() -> new EntityNotFound("Staff no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Staff no encontrado"));
         staff.setActive(false);
         staffRepository.save(staff);
     }
@@ -58,9 +57,9 @@ public class StaffService {
     }
 
     @Transactional
-    public void updateStaff(StaffEditRequestDto dto, Rol rol) throws EntityNotFound {
+    public void updateStaff(StaffEditRequestDto dto, Rol rol) {
         Staff staff = staffRepository.findByDni(dto.dni())
-                .orElseThrow(() -> new EntityNotFound("Staff no encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException("Staff no encontrado"));
         staff.setName(dto.name());
         staff.setRol(rol);
         if (dto.password() != null && !dto.password().isBlank()) {

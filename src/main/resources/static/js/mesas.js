@@ -40,7 +40,7 @@ function connectTableWebSocket() {
 function disconnectTableWebSocket() {
     if (stompClientMesas !== null && isStompConnected) {
         try {
-            stompClientMesas.disconnect(function() {
+            stompClientMesas.disconnect(function () {
                 console.log('WebSocket de mesas desconectado');
             });
             isStompConnected = false;
@@ -67,9 +67,14 @@ function initMesaClickEvents() {
         mesasGrid.removeEventListener('click', mesasGrid._mesasClickHandler);
     }
 
-    mesasGrid._mesasClickHandler = function(e) {
+    mesasGrid._mesasClickHandler = function (e) {
         const mesa = e.target.closest('.mesa');
-        if (mesa) {
+        const crearPedidoBtn = e.target.closest('.btn-crear-pedido');
+
+        if (crearPedidoBtn && mesa) {
+            const tableNumber = mesa.getAttribute('data-numero');
+            openOrderModal(parseInt(tableNumber));
+        } else if (mesa && !crearPedidoBtn) {
             openTableStatusModal(mesa);
         }
     };
@@ -175,6 +180,7 @@ function openTableStatusModal(mesaElement) {
     const tableNumber = mesaElement.getAttribute('data-numero');
     const titleNumberSpan = overlay.querySelector('.modal-title-table-number');
     const hiddenInput = document.getElementById('modalTableNumberInput');
+    const crearPedidoSection = document.getElementById('crearPedidoSection');
 
     if (titleNumberSpan) titleNumberSpan.textContent = tableNumber;
     if (hiddenInput) hiddenInput.value = tableNumber;
@@ -187,6 +193,15 @@ function openTableStatusModal(mesaElement) {
             btn.classList.remove('selected-status');
         }
     });
+
+    // Show "Crear Pedido" section only if current status is DISPONIBLE
+    if (crearPedidoSection) {
+        if (currentStatus === 'DISPONIBLE') {
+            crearPedidoSection.style.display = 'block';
+        } else {
+            crearPedidoSection.style.display = 'none';
+        }
+    }
 
     overlay.style.display = 'flex';
 }
@@ -205,12 +220,16 @@ function initMesaModalEvents() {
 
     const closeBtn = document.getElementById('closeTableStatusModal');
     const cancelarBtn = document.getElementById('cancelarTableStatus');
+    const crearPedidoBtn = document.getElementById('crearPedidoBtn');
 
     if (closeBtn && closeBtn._closeHandler) {
         closeBtn.removeEventListener('click', closeBtn._closeHandler);
     }
     if (cancelarBtn && cancelarBtn._cancelHandler) {
         cancelarBtn.removeEventListener('click', cancelarBtn._cancelHandler);
+    }
+    if (crearPedidoBtn && crearPedidoBtn._crearPedidoHandler) {
+        crearPedidoBtn.removeEventListener('click', crearPedidoBtn._crearPedidoHandler);
     }
     if (overlay._overlayClickHandler) {
         overlay.removeEventListener('click', overlay._overlayClickHandler);
@@ -229,14 +248,25 @@ function initMesaModalEvents() {
         cancelarBtn.addEventListener('click', cancelarBtn._cancelHandler);
     }
 
-    overlay._overlayClickHandler = function(event) {
+    if (crearPedidoBtn) {
+        crearPedidoBtn._crearPedidoHandler = function () {
+            const tableNumber = document.getElementById('modalTableNumberInput').value;
+            if (tableNumber) {
+                closeTableStatusModal();
+                openOrderModal(parseInt(tableNumber));
+            }
+        };
+        crearPedidoBtn.addEventListener('click', crearPedidoBtn._crearPedidoHandler);
+    }
+
+    overlay._overlayClickHandler = function (event) {
         if (event.target === overlay) {
             closeTableStatusModal();
         }
     };
     overlay.addEventListener('click', overlay._overlayClickHandler);
 
-    overlay._statusButtonHandler = function(event) {
+    overlay._statusButtonHandler = function (event) {
         const btn = event.target.closest('.status-button');
         if (btn) {
             const status = btn.dataset.status;
@@ -249,6 +279,90 @@ function initMesaModalEvents() {
     overlay.addEventListener('click', overlay._statusButtonHandler);
 }
 
+function initOrderModalEvents() {
+    const overlay = document.getElementById('orderModal');
+    if (!overlay) return;
+
+    const closeBtn = document.getElementById('closeOrderModal');
+    const cancelBtn = document.getElementById('cancelOrder');
+    const submitBtn = document.getElementById('submitOrder');
+
+    if (closeBtn && closeBtn._closeHandler) {
+        closeBtn.removeEventListener('click', closeBtn._closeHandler);
+    }
+    if (cancelBtn && cancelBtn._cancelHandler) {
+        cancelBtn.removeEventListener('click', cancelBtn._cancelHandler);
+    }
+    if (submitBtn && submitBtn._submitHandler) {
+        submitBtn.removeEventListener('click', submitBtn._submitHandler);
+    }
+    if (overlay._overlayClickHandler) {
+        overlay.removeEventListener('click', overlay._overlayClickHandler);
+    }
+    if (overlay._quantityButtonHandler) {
+        overlay.removeEventListener('click', overlay._quantityButtonHandler);
+    }
+    if (overlay._notesInputHandler) {
+        overlay.removeEventListener('input', overlay._notesInputHandler);
+    }
+
+    if (closeBtn) {
+        closeBtn._closeHandler = closeOrderModal;
+        closeBtn.addEventListener('click', closeBtn._closeHandler);
+    }
+
+    if (cancelBtn) {
+        cancelBtn._cancelHandler = closeOrderModal;
+        cancelBtn.addEventListener('click', cancelBtn._cancelHandler);
+    }
+
+    if (submitBtn) {
+        submitBtn._submitHandler = submitOrder;
+        submitBtn.addEventListener('click', submitBtn._submitHandler);
+    }
+
+    overlay._overlayClickHandler = function (event) {
+        if (event.target === overlay) {
+            closeOrderModal();
+        }
+    };
+    overlay.addEventListener('click', overlay._overlayClickHandler);
+
+    overlay._quantityButtonHandler = function (event) {
+        const btn = event.target.closest('.btn-quantity');
+        if (btn) {
+            const action = btn.dataset.action;
+            const plateId = parseInt(btn.dataset.plateId);
+            const quantityDisplay = document.getElementById(`quantity-${plateId}`);
+            const notesInput = document.getElementById(`notes-${plateId}`);
+            let quantity = parseInt(quantityDisplay.textContent);
+
+            if (action === 'increase') {
+                quantity++;
+            } else if (action === 'decrease' && quantity > 0) {
+                quantity--;
+            }
+
+            quantityDisplay.textContent = quantity;
+            const notes = notesInput.value.trim();
+            addPlateToOrder(plateId, quantity, notes);
+        }
+    };
+    overlay.addEventListener('click', overlay._quantityButtonHandler);
+
+    overlay._notesInputHandler = function (event) {
+        const input = event.target.closest('.notes-input');
+        if (input) {
+            const plateId = parseInt(input.id.replace('notes-', ''));
+            const quantityDisplay = document.getElementById(`quantity-${plateId}`);
+            const quantity = parseInt(quantityDisplay.textContent);
+            const notes = input.value.trim();
+            addPlateToOrder(plateId, quantity, notes);
+        }
+    };
+    overlay.addEventListener('input', overlay._notesInputHandler);
+}
+
 function cleanupMesas() {
     mesasInitialized = false;
 }
@@ -257,6 +371,8 @@ function initializeMesas() {
     initMesasFromDOM();
     initMesaClickEvents();
     initMesaModalEvents();
+    initOrderModalEvents();
+    connectTableWebSocket();
     mesasInitialized = true;
 }
 
@@ -270,6 +386,157 @@ if (document.readyState === 'loading') {
     if (!mesasInitialized) {
         initializeMesas();
     }
+}
+
+let currentOrderItems = [];
+let currentTableNumber = null;
+
+function openOrderModal(tableNumber) {
+    currentTableNumber = tableNumber;
+    currentOrderItems = [];
+    document.getElementById('orderModalTableNumber').textContent = tableNumber;
+    document.getElementById('orderModal').style.display = 'flex';
+    loadAvailablePlates();
+    updateOrderSummary();
+}
+
+function closeOrderModal() {
+    document.getElementById('orderModal').style.display = 'none';
+    currentOrderItems = [];
+    currentTableNumber = null;
+}
+
+function loadAvailablePlates() {
+    fetch('/api/orders/plates')
+        .then(response => response.json())
+        .then(plates => {
+            const platesList = document.getElementById('platesList');
+            platesList.innerHTML = '';
+
+            plates.forEach(plate => {
+                const plateDiv = document.createElement('div');
+                plateDiv.className = 'plate-item';
+                plateDiv.innerHTML = `
+                    <div class="plate-info">
+                        <h4>${plate.name}</h4>
+                        <p>${plate.description}</p>
+                        <p class="plate-price">S/ ${plate.price}</p>
+                    </div>
+                    <div class="plate-controls">
+                        <button class="btn-quantity" data-action="decrease" data-plate-id="${plate.id}">-</button>
+                        <span class="quantity-display" id="quantity-${plate.id}">0</span>
+                        <button class="btn-quantity" data-action="increase" data-plate-id="${plate.id}">+</button>
+                        <input type="text" class="notes-input" id="notes-${plate.id}" placeholder="Notas (opcional)">
+                    </div>
+                `;
+                platesList.appendChild(plateDiv);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading plates:', error);
+            showToast('Error al cargar los platos disponibles');
+        });
+}
+
+function updateOrderSummary() {
+    const orderSummary = document.getElementById('orderSummary');
+    const orderTotal = document.getElementById('orderTotal');
+
+    if (currentOrderItems.length === 0) {
+        orderSummary.innerHTML = '<p>No hay items en el pedido</p>';
+        orderTotal.textContent = '0.00';
+        return;
+    }
+
+    let total = 0;
+    orderSummary.innerHTML = currentOrderItems.map(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        return `
+            <div class="order-item">
+                <span>${item.name} x${item.quantity}</span>
+                <span>S/ ${itemTotal.toFixed(2)}</span>
+                ${item.notes ? `<small>Notas: ${item.notes}</small>` : ''}
+            </div>
+        `;
+    }).join('');
+
+    orderTotal.textContent = total.toFixed(2);
+}
+
+function addPlateToOrder(plateId, quantity, notes) {
+    const existingItem = currentOrderItems.find(item => item.plateId === plateId);
+    if (existingItem) {
+        existingItem.quantity = quantity;
+        existingItem.notes = notes;
+        if (quantity === 0) {
+            currentOrderItems = currentOrderItems.filter(item => item.plateId !== plateId);
+        }
+    } else if (quantity > 0) {
+        // Find plate details from the DOM
+        const plateDiv = document.querySelector(`.plate-item .btn-quantity[data-plate-id="${plateId}"]`);
+        if (plateDiv) {
+            const plateInfo = plateDiv.closest('.plate-item').querySelector('.plate-info');
+            const name = plateInfo.querySelector('h4').textContent;
+            const priceText = plateInfo.querySelector('.plate-price').textContent;
+            const price = parseFloat(priceText.replace('S/ ', ''));
+
+            currentOrderItems.push({
+                plateId: plateId,
+                name: name,
+                price: price,
+                quantity: quantity,
+                notes: notes
+            });
+        }
+    }
+    updateOrderSummary();
+}
+
+function submitOrder() {
+    if (currentOrderItems.length === 0) {
+        showToast('Debe agregar al menos un plato al pedido');
+        return;
+    }
+
+    const orderData = {
+        tableNumber: currentTableNumber,
+        items: currentOrderItems.map(item => ({
+            plateId: item.plateId,
+            quantity: item.quantity,
+            notes: item.notes || null
+        }))
+    };
+
+    fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 400) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Datos inválidos para el pedido');
+                });
+            } else {
+                throw new Error('Error al crear el pedido');
+            }
+        })
+        .then(data => {
+            showToast('Pedido creado exitosamente', 'success');
+            closeOrderModal();
+            // Update table status via WebSocket instead of reload
+            updateTableInView({number: currentTableNumber, status: 'ESPERANDO_PEDIDO'});
+            actualizarResumen();
+        })
+        .catch(error => {
+            console.error('Error submitting order:', error);
+            showToast(error.message || 'Error al crear el pedido');
+        });
 }
 
 function showToast(message, type = 'error', duration = 5000) {

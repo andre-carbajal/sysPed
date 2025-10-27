@@ -1,13 +1,20 @@
 package net.andrecarbajal.sysped.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
-@jakarta.persistence.Table(name="order_details")
+@Table(name = "order_details")
 @Getter
 @Setter
 public class OrderDetails {
@@ -17,11 +24,11 @@ public class OrderDetails {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="order_id", nullable=false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @ManyToOne
-    @JoinColumn(name="plate_id", nullable=false)
+    @JoinColumn(name = "plate_id", nullable = false)
     private Plate plate;
 
     @Column(nullable = false)

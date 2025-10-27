@@ -3,12 +3,15 @@ package net.andrecarbajal.sysped.service;
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.controller.PlateStatusWebSocketController;
 import net.andrecarbajal.sysped.dto.PlateDto;
+import net.andrecarbajal.sysped.dto.PlateListDto;
 import net.andrecarbajal.sysped.dto.PlateStatusDto;
 import net.andrecarbajal.sysped.model.Plate;
 import net.andrecarbajal.sysped.repository.PlateRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,5 +42,19 @@ public class PlateService {
         PlateDto fullDto = new PlateDto(updatedPlate.getId(), updatedPlate.getName(), updatedPlate.getDescription(), updatedPlate.getPrice(), updatedPlate.getImageBase64(), updatedPlate.isActive());
         plateStatusWebSocketController.sendPlateUpdate(fullDto);
         return updatedPlate;
+    }
+
+    public List<PlateListDto> findAllActivePlates() {
+        return plateRepository.findAll().stream()
+                .filter(plate -> Boolean.TRUE.equals(plate.isActive()))
+                .map(plate -> new PlateListDto(
+                        plate.getId(),
+                        plate.getName(),
+                        plate.getDescription(),
+                        plate.getPrice(),
+                        plate.getImageBase64(),
+                        plate.isActive()
+                ))
+                .collect(Collectors.toList());
     }
 }

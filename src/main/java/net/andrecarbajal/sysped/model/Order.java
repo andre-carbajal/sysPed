@@ -1,6 +1,17 @@
 package net.andrecarbajal.sysped.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@jakarta.persistence.Table(name="orders")
+@Table(name = "orders")
 @Getter
 @Setter
 public class Order {
@@ -19,8 +30,8 @@ public class Order {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="table_id", nullable=false)
-    private Table table;
+    @JoinColumn(name = "table_id", nullable = false)
+    private RestaurantTable restaurantTable;
 
     @ManyToOne
     @JoinColumn(name = "staff_id", nullable = false)

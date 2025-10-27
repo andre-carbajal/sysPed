@@ -1,7 +1,7 @@
 package net.andrecarbajal.sysped.service;
 
 import lombok.RequiredArgsConstructor;
-import net.andrecarbajal.sysped.model.Table;
+import net.andrecarbajal.sysped.model.RestaurantTable;
 import net.andrecarbajal.sysped.model.TableStatus;
 import net.andrecarbajal.sysped.repository.TableRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,8 +21,8 @@ public class TableService {
     private final SimpMessagingTemplate messagingTemplate;
 
     public List<TableResponseDto> getOperativeTables() {
-        List<Table> tables = tableRepository.findAll();
-        return tables.stream()
+        List<RestaurantTable> restaurantTables = tableRepository.findAll();
+        return restaurantTables.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -39,20 +39,20 @@ public class TableService {
 
     public TableResponseDto updateTableStatus(Integer tableNumber, TableStatus newStatus) {
 
-        Table table = tableRepository.findByNumber(tableNumber)
+        RestaurantTable restaurantTable = tableRepository.findByNumber(tableNumber)
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada: " + tableNumber));
 
-        table.setStatus(newStatus);
-        Table updatedTable = tableRepository.save(table);
+        restaurantTable.setStatus(newStatus);
+        RestaurantTable updatedRestaurantTable = tableRepository.save(restaurantTable);
 
-        TableResponseDto dto = convertToDTO(updatedTable);
+        TableResponseDto dto = convertToDTO(updatedRestaurantTable);
 
         messagingTemplate.convertAndSend("/topic/table-status", dto);
 
         return dto;
     }
 
-    private TableResponseDto convertToDTO(Table table) {
-        return new TableResponseDto(table.getNumber(), table.getStatus());
+    private TableResponseDto convertToDTO(RestaurantTable restaurantTable) {
+        return new TableResponseDto(restaurantTable.getNumber(), restaurantTable.getStatus());
     }
 }

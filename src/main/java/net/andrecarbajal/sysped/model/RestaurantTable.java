@@ -1,14 +1,21 @@
 package net.andrecarbajal.sysped.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@jakarta.persistence.Table(name = "tables")
+@Table(name = "tables")
 @Getter
 @Setter
-public class Table {
+public class RestaurantTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,14 +23,7 @@ public class Table {
     @Column(nullable = false)
     private int number;
 
-    @Column(nullable = false)
-    private int capacity;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private TableStatus status = TableStatus.DISPONIBLE;
-
-    public boolean isOperativa() {
-        return this.status != TableStatus.FUERA_DE_SERVICIO;
-    }
 }

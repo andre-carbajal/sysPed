@@ -42,34 +42,84 @@
     <div class="modal-overlay" id="tableStatusModal">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="tableStatusModalTitle">Cambiar Estado: Mesa N° <span class="modal-title-table-number">?</span></h2>
+                <h2 id="tableStatusModalTitle">Cambiar Estado: Mesa N° <span class="modal-title-restaurantTable-number">?</span>
+                </h2>
                 <button class="modal-close" id="closeTableStatusModal">&times;</button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="modalTableNumberInput" value="">
 
-                <p>Selecciona el nuevo estado para la mesa.</p>
+                <div class="modal-section" id="crearPedidoSection" style="display: none;">
+                    <h3 class="section-title">Acciones Rápidas</h3>
+                    <button type="button" class="btn btn-crear-pedido-modal" id="crearPedidoBtn">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right: 6px;">
+                            <path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z"/>
+                        </svg>
+                        Crear Pedido
+                    </button>
+                    <hr class="section-divider">
+                </div>
 
-                <div class="status-button-grid">
-                    <button class="status-button" data-status="DISPONIBLE">
-                        <span>Libre</span>
-                    </button>
-                    <button class="status-button" data-status="ESPERANDO_PEDIDO">
-                        <span>Esperando Pedido</span>
-                    </button>
-                    <button class="status-button" data-status="FALTA_ATENCION">
-                        <span>Falta Atención</span>
-                    </button>
-                    <button class="status-button" data-status="PEDIDO_ENTREGADO">
-                        <span>Pedido Entregado</span>
-                    </button>
-                    <button class="status-button status-button-gris" data-status="FUERA_DE_SERVICIO">
-                        <span>Fuera de Servicio</span>
-                    </button>
+                <div class="modal-section">
+                    <h3 class="section-title">Cambiar Estado de Mesa</h3>
+                    <p class="section-description">Selecciona el nuevo estado para la mesa.</p>
+
+                    <div class="status-button-grid">
+                        <button class="status-button status-button-verde" data-status="DISPONIBLE">
+                            <span class="status-icon">✓</span>
+                            <span class="status-label">Libre</span>
+                        </button>
+                        <button class="status-button status-button-azul" data-status="ESPERANDO_PEDIDO">
+                            <span class="status-icon">⏱</span>
+                            <span class="status-label">Esperando Pedido</span>
+                        </button>
+                        <button class="status-button status-button-amarillo" data-status="FALTA_ATENCION">
+                            <span class="status-icon">⚠</span>
+                            <span class="status-label">Falta Atención</span>
+                        </button>
+                        <button class="status-button status-button-rojo" data-status="PEDIDO_ENTREGADO">
+                            <span class="status-icon">✓</span>
+                            <span class="status-label">Pedido Entregado</span>
+                        </button>
+                        <button class="status-button status-button-gris" data-status="FUERA_DE_SERVICIO">
+                            <span class="status-icon">✕</span>
+                            <span class="status-label">Fuera de Servicio</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
                     <button type="button" class="btn btn-danger" id="cancelarTableStatus">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Crear Pedido - Mesa N° <span id="orderModalTableNumber">?</span></h2>
+                <button class="modal-close" id="closeOrderModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="order-creation-container">
+                    <div class="plates-section">
+                        <h3>Platos Disponibles</h3>
+                        <div id="platesList" class="plates-list">
+                        </div>
+                    </div>
+                    <div class="order-summary-section">
+                        <h3>Resumen del Pedido</h3>
+                        <div id="orderSummary" class="order-summary">
+                        </div>
+                        <div class="order-total">
+                            <strong>Total: S/ <span id="orderTotal">0.00</span></strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-danger" id="cancelOrder">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="submitOrder">Crear Pedido</button>
                 </div>
             </div>
         </div>

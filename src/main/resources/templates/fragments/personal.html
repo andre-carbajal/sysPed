@@ -4,7 +4,7 @@
         <h2>Personal</h2>
         <button class="btn btn-success" id="btnAgregarPersonal" type="button">Agregar Personal</button>
     </div>
-    <restaurantTable class="crud-restaurantTable">
+    <table class="crud-restaurantTable">
         <thead>
         <tr>
             <th>DNI</th>
@@ -29,14 +29,14 @@
                                  (${#strings.toUpperCase(currentRol)} != 'JEFE' and ${#strings.toUpperCase(currentRol)} != 'ADMINISTRADOR')">
                     <input type="hidden" name="dni" th:value="${usuario.dni}">
                     <button class="btn btn-danger" type="submit"
-                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar a ' + this.querySelector('input[name=dni]').value + '?');">
+                            onsubmit="return confirm('\u00bfEst\u00e1s seguro de que deseas eliminar a ' + this.querySelector('input[name=dni]').value + '?');">
                         Eliminar
                     </button>
                 </form>
             </td>
         </tr>
         </tbody>
-    </restaurantTable>
+    </table>
 </div>
 
 <div class="modal-overlay" id="staffEditModal">

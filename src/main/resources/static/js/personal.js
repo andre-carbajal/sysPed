@@ -139,4 +139,20 @@ function initPersonalTabEvents() {
             staffCreateModal.style.display = 'none';
         });
     }
+
+    if (personalTbody) {
+        personalTbody.addEventListener('click', function(e) {
+            const btnEliminar = e.target.closest('.btn-danger');
+            if (btnEliminar && btnEliminar.type === 'submit') {
+                e.preventDefault();
+                const tr = btnEliminar.closest('tr');
+                const nombre = tr ? tr.querySelector('td:nth-child(2)')?.textContent : '';
+                const dni = tr ? tr.querySelector('td:nth-child(1)')?.textContent : '';
+                if (confirm(`¿Estás seguro de que deseas eliminar a ${nombre} (DNI: ${dni})?`)) {
+                    btnEliminar.closest('form').submit();
+                }
+                return;
+            }
+        });
+    }
 }

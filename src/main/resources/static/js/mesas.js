@@ -194,7 +194,6 @@ function openTableStatusModal(mesaElement) {
         }
     });
 
-    // Show "Crear Pedido" section only if current status is DISPONIBLE
     if (crearPedidoSection) {
         if (currentStatus === 'DISPONIBLE') {
             crearPedidoSection.style.display = 'block';
@@ -407,7 +406,7 @@ function closeOrderModal() {
 }
 
 function loadAvailablePlates() {
-    fetch('/api/orders/plates')
+    fetch('/dashboard/orders/plates')
         .then(response => response.json())
         .then(plates => {
             const platesList = document.getElementById('platesList');
@@ -473,7 +472,6 @@ function addPlateToOrder(plateId, quantity, notes) {
             currentOrderItems = currentOrderItems.filter(item => item.plateId !== plateId);
         }
     } else if (quantity > 0) {
-        // Find plate details from the DOM
         const plateDiv = document.querySelector(`.plate-item .btn-quantity[data-plate-id="${plateId}"]`);
         if (plateDiv) {
             const plateInfo = plateDiv.closest('.plate-item').querySelector('.plate-info');
@@ -508,7 +506,7 @@ function submitOrder() {
         }))
     };
 
-    fetch('/api/orders', {
+    fetch('dashboard/orders', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -529,7 +527,6 @@ function submitOrder() {
         .then(data => {
             showToast('Pedido creado exitosamente', 'success');
             closeOrderModal();
-            // Update table status via WebSocket instead of reload
             updateTableInView({number: currentTableNumber, status: 'ESPERANDO_PEDIDO'});
             actualizarResumen();
         })

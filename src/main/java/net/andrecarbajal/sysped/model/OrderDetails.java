@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @jakarta.persistence.Table(name="order_details")
 @Getter
@@ -26,8 +28,8 @@ public class OrderDetails {
     private int quantity;
 
     @Column(nullable = false)
-    private double priceUnit;
+    private BigDecimal priceUnit;
 
-    @Column(length = 255)
+    @Column
     private String notes;
 }

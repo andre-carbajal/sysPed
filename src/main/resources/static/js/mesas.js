@@ -31,6 +31,10 @@ function connectTableWebSocket() {
                 showToast('Error: ' + payload);
             }
         });
+        stompClientMesas.subscribe('/topic/plate-updates', function (message) {
+            const plate = JSON.parse(message.body);
+            updatePlateInOrderModal(plate);
+        });
     }, function (error) {
         console.warn('Error connecting STOMP:', error);
         isStompConnected = false;
@@ -415,11 +419,12 @@ function loadAvailablePlates() {
             plates.forEach(plate => {
                 const plateDiv = document.createElement('div');
                 plateDiv.className = 'plate-item';
+                plateDiv.setAttribute('data-plate-id', plate.id);
                 plateDiv.innerHTML = `
                     <div class="plate-info">
                         <h4>${plate.name}</h4>
                         <p>${plate.description}</p>
-                        <p class="plate-price">S/ ${plate.price}</p>
+                        <p class="plate-price" data-price="${plate.price}">S/ ${plate.price}</p>
                     </div>
                     <div class="plate-controls">
                         <button class="btn-quantity" data-action="decrease" data-plate-id="${plate.id}">-</button>
@@ -435,6 +440,42 @@ function loadAvailablePlates() {
             console.error('Error loading plates:', error);
             showToast('Error al cargar los platos disponibles');
         });
+}
+
+function updatePlateInOrderModal(plate) {
+    const plateItem = document.querySelector(`.plate-item[data-plate-id="${plate.id}"]`);
+    if (!plateItem) return;
+
+    const plateInfo = plateItem.querySelector('.plate-info');
+    const nameEl = plateInfo.querySelector('h4');
+    const descEl = plateInfo.querySelector('p:not(.plate-price)');
+    const priceEl = plateInfo.querySelector('.plate-price');
+
+    if (nameEl) nameEl.textContent = plate.name;
+    if (descEl) descEl.textContent = plate.description;
+    if (priceEl) {
+        priceEl.textContent = `S/ ${plate.price}`;
+        priceEl.setAttribute('data-price', plate.price);
+    }
+
+    const orderItem = currentOrderItems.find(item => item.plateId === plate.id);
+    if (orderItem) {
+        orderItem.name = plate.name;
+        orderItem.price = plate.price;
+        updateOrderSummary();
+    }
+
+    if (!plate.active) {
+        plateItem.style.opacity = '0.5';
+        plateItem.style.pointerEvents = 'none';
+        const quantityDisplay = document.getElementById(`quantity-${plate.id}`);
+        if (quantityDisplay && parseInt(quantityDisplay.textContent) > 0) {
+            showToast(`El plato "${plate.name}" ya no está disponible`, 'warning');
+        }
+    } else {
+        plateItem.style.opacity = '1';
+        plateItem.style.pointerEvents = 'auto';
+    }
 }
 
 function updateOrderSummary() {
@@ -464,29 +505,31 @@ function updateOrderSummary() {
 }
 
 function addPlateToOrder(plateId, quantity, notes) {
+    const plateItem = document.querySelector(`.plate-item[data-plate-id="${plateId}"]`);
+    if (!plateItem) return;
+
+    const plateInfo = plateItem.querySelector('.plate-info');
+    const name = plateInfo.querySelector('h4').textContent;
+    const priceEl = plateInfo.querySelector('.plate-price');
+    const price = parseFloat(priceEl.getAttribute('data-price') || priceEl.textContent.replace('S/ ', ''));
+
     const existingItem = currentOrderItems.find(item => item.plateId === plateId);
     if (existingItem) {
         existingItem.quantity = quantity;
         existingItem.notes = notes;
+        existingItem.price = price;
+        existingItem.name = name;
         if (quantity === 0) {
             currentOrderItems = currentOrderItems.filter(item => item.plateId !== plateId);
         }
     } else if (quantity > 0) {
-        const plateDiv = document.querySelector(`.plate-item .btn-quantity[data-plate-id="${plateId}"]`);
-        if (plateDiv) {
-            const plateInfo = plateDiv.closest('.plate-item').querySelector('.plate-info');
-            const name = plateInfo.querySelector('h4').textContent;
-            const priceText = plateInfo.querySelector('.plate-price').textContent;
-            const price = parseFloat(priceText.replace('S/ ', ''));
-
-            currentOrderItems.push({
-                plateId: plateId,
-                name: name,
-                price: price,
-                quantity: quantity,
-                notes: notes
-            });
-        }
+        currentOrderItems.push({
+            plateId: plateId,
+            name: name,
+            price: price,
+            quantity: quantity,
+            notes: notes
+        });
     }
     updateOrderSummary();
 }

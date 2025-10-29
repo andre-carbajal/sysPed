@@ -262,13 +262,6 @@ function initMesaModalEvents() {
         crearPedidoBtn.addEventListener('click', crearPedidoBtn._crearPedidoHandler);
     }
 
-    overlay._overlayClickHandler = function (event) {
-        if (event.target === overlay) {
-            closeTableStatusModal();
-        }
-    };
-    overlay.addEventListener('click', overlay._overlayClickHandler);
-
     overlay._statusButtonHandler = function (event) {
         const btn = event.target.closest('.status-button');
         if (btn) {
@@ -323,13 +316,6 @@ function initOrderModalEvents() {
         submitBtn._submitHandler = submitOrder;
         submitBtn.addEventListener('click', submitBtn._submitHandler);
     }
-
-    overlay._overlayClickHandler = function (event) {
-        if (event.target === overlay) {
-            closeOrderModal();
-        }
-    };
-    overlay.addEventListener('click', overlay._overlayClickHandler);
 
     overlay._quantityButtonHandler = function (event) {
         const btn = event.target.closest('.btn-quantity');

@@ -246,13 +246,6 @@ function initPlatoModalEvents() {
     cancelBtn._cancelHandler = closeUpdatePlateModal;
     cancelBtn.addEventListener('click', cancelBtn._cancelHandler);
 
-    modal._modalClickHandler = function(event) {
-        if (event.target === modal) {
-            closeUpdatePlateModal();
-        }
-    };
-    modal.addEventListener('click', modal._modalClickHandler);
-
     form._submitHandler = function(event) {
         event.preventDefault();
         savePlateUpdate();

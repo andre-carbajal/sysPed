@@ -182,7 +182,7 @@ function openTableStatusModal(mesaElement) {
     if (!overlay) return;
 
     const tableNumber = mesaElement.getAttribute('data-numero');
-    const titleNumberSpan = overlay.querySelector('.modal-title-table-number');
+    const titleNumberSpan = overlay.querySelector('.modal-title-restaurantTable-number');
     const hiddenInput = document.getElementById('modalTableNumberInput');
     const crearPedidoSection = document.getElementById('crearPedidoSection');
 

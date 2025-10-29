@@ -99,7 +99,6 @@ function sendTableUpdate(tableNumber, newStatus) {
             }
             closeTableStatusModal();
         } catch (e) {
-            console.error('Error sending via STOMP:', e);
             showToast('No se pudo enviar la actualización via WebSocket. Por favor recarga la página e intenta de nuevo.');
         }
     } else {
@@ -177,6 +176,23 @@ function actualizarVistaMesa(mesaElement, statusEnum) {
     mesaElement.setAttribute('data-status-enum', statusEnum);
 }
 
+function getAllowedStatusesForTable(currentStatus) {
+    switch (currentStatus) {
+        case 'DISPONIBLE':
+            return new Set(['FUERA_DE_SERVICIO']);
+        case 'ESPERANDO_PEDIDO':
+            return new Set(['FALTA_ATENCION', 'PEDIDO_ENTREGADO', 'DISPONIBLE']);
+        case 'FALTA_ATENCION':
+            return new Set(['DISPONIBLE', 'PEDIDO_ENTREGADO']);
+        case 'PEDIDO_ENTREGADO':
+            return new Set(['DISPONIBLE', 'ESPERANDO_PEDIDO', 'FALTA_ATENCION']);
+        case 'FUERA_DE_SERVICIO':
+            return new Set(['DISPONIBLE']);
+        default:
+            return new Set();
+    }
+}
+
 function openTableStatusModal(mesaElement) {
     const overlay = document.getElementById('tableStatusModal');
     if (!overlay) return;
@@ -197,6 +213,42 @@ function openTableStatusModal(mesaElement) {
             btn.classList.remove('selected-status');
         }
     });
+
+    fetch(`/dashboard/tables/${tableNumber}/allowed-statuses`)
+        .then(resp => {
+            if (!resp.ok) throw new Error('No se pudo obtener estados permitidos');
+            return resp.json();
+        })
+        .then(allowedList => {
+            const allowedSet = new Set(allowedList);
+            overlay.querySelectorAll('.status-button').forEach(btn => {
+                const target = btn.dataset.status;
+                if (!allowedSet.has(target) && target !== currentStatus) {
+                    btn.disabled = true;
+                    btn.classList.add('status-button-disabled');
+                    btn.title = 'Operación no permitida desde ' + currentStatus;
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('status-button-disabled');
+                    btn.title = '';
+                }
+            });
+        })
+        .catch(err => {
+            const allowed = getAllowedStatusesForTable(currentStatus);
+            overlay.querySelectorAll('.status-button').forEach(btn => {
+                const target = btn.dataset.status;
+                if (!allowed.has(target) && target !== currentStatus) {
+                    btn.disabled = true;
+                    btn.classList.add('status-button-disabled');
+                    btn.title = 'Operación no permitida desde ' + currentStatus;
+                } else {
+                    btn.disabled = false;
+                    btn.classList.remove('status-button-disabled');
+                    btn.title = '';
+                }
+            });
+        });
 
     if (crearPedidoSection) {
         if (currentStatus === 'DISPONIBLE') {
@@ -265,10 +317,35 @@ function initMesaModalEvents() {
     overlay._statusButtonHandler = function (event) {
         const btn = event.target.closest('.status-button');
         if (btn) {
+            if (btn.disabled) {
+                showToast('Operación no permitida.');
+                return;
+            }
             const status = btn.dataset.status;
             const tableNumber = document.getElementById('modalTableNumberInput').value;
             if (tableNumber && status) {
-                sendTableUpdate(tableNumber, status);
+                fetch(`/dashboard/tables/${tableNumber}/allowed-statuses`)
+                    .then(resp => resp.ok ? resp.json() : Promise.reject('No se pudo validar transición'))
+                    .then(allowedList => {
+                        const allowedSet = new Set(allowedList);
+                        const mesaEl = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+                        const current = mesaEl ? mesaEl.getAttribute('data-status-enum') || 'FUERA_DE_SERVICIO' : 'FUERA_DE_SERVICIO';
+                        if (!allowedSet.has(status) && status !== current) {
+                            showToast('Operación no permitida: ' + current + ' → ' + status);
+                            return;
+                        }
+                        sendTableUpdate(tableNumber, status);
+                    })
+                    .catch(err => {
+                        const mesaEl = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+                        const current = mesaEl ? mesaEl.getAttribute('data-status-enum') || 'FUERA_DE_SERVICIO' : 'FUERA_DE_SERVICIO';
+                        const allowed = getAllowedStatusesForTable(current);
+                        if (!allowed.has(status) && status !== current) {
+                            showToast('Operación no permitida: ' + current + ' → ' + status);
+                            return;
+                        }
+                        sendTableUpdate(tableNumber, status);
+                    });
             }
         }
     };
@@ -423,7 +500,6 @@ function loadAvailablePlates() {
             });
         })
         .catch(error => {
-            console.error('Error loading plates:', error);
             showToast('Error al cargar los platos disponibles');
         });
 }
@@ -535,7 +611,7 @@ function submitOrder() {
         }))
     };
 
-    fetch('dashboard/orders', {
+    fetch('/dashboard/orders', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -560,7 +636,6 @@ function submitOrder() {
             actualizarResumen();
         })
         .catch(error => {
-            console.error('Error submitting order:', error);
             showToast(error.message || 'Error al crear el pedido');
         });
 }

@@ -4,7 +4,6 @@ public enum OrderStatus {
     PENDIENTE,
     EN_PREPARACION,
     LISTO,
-    SERVIDO,
     CANCELADO,
     PAGADO
 }

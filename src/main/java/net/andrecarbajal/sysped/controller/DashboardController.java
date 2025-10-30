@@ -74,4 +74,11 @@ public class DashboardController {
         model.addAttribute("resumenMesas", tableService.getTableSummary());
         return "fragments/mesas";
     }
+
+    @GetMapping("/cocinero_fragment")
+    public String cocineroFragment(Model model) {
+        // El fragmento del cocinero no requiere datos complejos por ahora;
+        // se cargará mediante fetch REST desde el JS (lista de pedidos y actualizaciones).
+        return "fragments/cocinero";
+    }
 }

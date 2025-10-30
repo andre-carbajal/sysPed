@@ -31,6 +31,7 @@
         <div class="nav-tab" data-tab="platos"
              sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO', 'ROLE_COCINERO')">Platos
         </div>
+        <div class="nav-tab" data-tab="cocinero" sec:authorize="hasAnyRole('ROLE_COCINERO')">Cocina</div>
     </div>
 
     <div id="dynamicTabContent"></div>
@@ -124,6 +125,22 @@
                         }
                         if (typeof connectTableWebSocket === 'function') {
                             connectTableWebSocket();
+                        }
+                    };
+                    document.body.appendChild(script);
+                });
+        } else if (tabName === 'cocinero') {
+            removeOldScript();
+            fetch('/dashboard/cocinero_fragment')
+                .then(res => res.text())
+                .then(html => {
+                    dynamicTabContent.innerHTML = html;
+                    const script = document.createElement('script');
+                    script.id = 'dynamic-tab-script';
+                    script.src = '/js/cocinero.js';
+                    script.onload = function () {
+                        if (typeof initializeCocinero === 'function') {
+                            initializeCocinero();
                         }
                     };
                     document.body.appendChild(script);

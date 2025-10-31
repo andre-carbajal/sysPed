@@ -8,7 +8,7 @@ import java.security.SecureRandom;
 
 @Service
 public class CaptchaService {
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final String CHARACTERS = "ABCDEFGHJKMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789";
     private static final int CAPTCHA_LENGTH = 6;
     private static final SecureRandom random = new SecureRandom();
 

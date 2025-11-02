@@ -50,17 +50,14 @@
     }
 
     function cleanupWebSockets() {
-        if (typeof disconnectTableWebSocket === 'function') {
-            disconnectTableWebSocket();
-        }
-        if (typeof disconnectPlateStatusWebSocket === 'function') {
-            disconnectPlateStatusWebSocket();
-        }
         if (typeof cleanupMesas === 'function') {
             cleanupMesas();
         }
         if (typeof cleanupPlatos === 'function') {
             cleanupPlatos();
+        }
+        if (typeof cleanupCocinero === 'function') {
+            cleanupCocinero();
         }
     }
 
@@ -123,9 +120,6 @@
                         if (typeof initializeMesas === 'function') {
                             initializeMesas();
                         }
-                        if (typeof connectTableWebSocket === 'function') {
-                            connectTableWebSocket();
-                        }
                     };
                     document.body.appendChild(script);
                 });
@@ -151,5 +145,6 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script th:src="@{/js/websocketManager.js}"></script>
 </body>
 </html>

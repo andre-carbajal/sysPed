@@ -1,59 +1,4 @@
-let stompClientMesas = null;
-let isStompConnected = false;
 let mesasInitialized = false;
-
-function connectTableWebSocket() {
-    if (stompClientMesas !== null && isStompConnected) {
-        try {
-            stompClientMesas.disconnect();
-        } catch (e) {
-            console.warn('Error al desconectar WebSocket anterior:', e);
-        }
-    }
-
-    const socket = new SockJS('/ws');
-    stompClientMesas = Stomp.over(socket);
-    stompClientMesas.connect({}, function () {
-        isStompConnected = true;
-        stompClientMesas.subscribe('/topic/table-status', function (message) {
-            const tableDTO = JSON.parse(message.body);
-            updateTableInView(tableDTO);
-        });
-        stompClientMesas.subscribe('/user/queue/errors', function (message) {
-            const payload = message.body;
-            if (payload) {
-                showToast('Error: ' + payload);
-            }
-        });
-        stompClientMesas.subscribe('/topic/table-errors', function (message) {
-            const payload = message.body;
-            if (payload) {
-                showToast('Error: ' + payload);
-            }
-        });
-        stompClientMesas.subscribe('/topic/plate-updates', function (message) {
-            const plate = JSON.parse(message.body);
-            updatePlateInOrderModal(plate);
-        });
-    }, function (error) {
-        console.warn('Error connecting STOMP:', error);
-        isStompConnected = false;
-    });
-}
-
-function disconnectTableWebSocket() {
-    if (stompClientMesas !== null && isStompConnected) {
-        try {
-            stompClientMesas.disconnect(function () {
-                console.log('WebSocket de mesas desconectado');
-            });
-            isStompConnected = false;
-            stompClientMesas = null;
-        } catch (e) {
-            console.warn('Error al desconectar WebSocket:', e);
-        }
-    }
-}
 
 function updateTableInView(tableDTO) {
     const mesaElement = document.querySelector(`.mesa[data-numero="${tableDTO.number}"]`);
@@ -87,23 +32,20 @@ function initMesaClickEvents() {
 }
 
 function sendTableUpdate(tableNumber, newStatus) {
-    if (typeof stompClientMesas !== 'undefined' && isStompConnected) {
-        try {
-            const payloadObj = {tableNumber: parseInt(tableNumber, 10), status: newStatus};
-            const payload = JSON.stringify(payloadObj);
-            stompClientMesas.send('/app/mesas/update-status', {}, payload);
-            const el = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
-            if (el) {
-                actualizarVistaMesa(el, newStatus);
-                actualizarResumen();
-            }
-            closeTableStatusModal();
-        } catch (e) {
-            showToast('No se pudo enviar la actualización via WebSocket. Por favor recarga la página e intenta de nuevo.');
+    const url = `/dashboard/tables/${tableNumber}/status`;
+    fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: newStatus})
+    }).then(resp => {
+        if(!resp.ok){
+           return resp.text().then(text => {throw new Error(text || 'Error al actualizar estado')})
         }
-    } else {
-        showToast('Conexión en tiempo real no disponible. Por favor recarga la página para reintentar.');
-    }
+        // UI update will be triggered by websocket message.
+        closeTableStatusModal();
+    }).catch(err => {
+        showToast('Error al cambiar estado: ' + err.message);
+    });
 }
 
 function actualizarResumen() {
@@ -430,15 +372,26 @@ function initOrderModalEvents() {
 }
 
 function cleanupMesas() {
-    mesasInitialized = false;
+    if(mesasInitialized) {
+        websocketManager.unsubscribe('/topic/table-status');
+        websocketManager.unsubscribe('/topic/plate-updates');
+        mesasInitialized = false;
+    }
 }
 
 function initializeMesas() {
+    if (mesasInitialized) return;
+
     initMesasFromDOM();
     initMesaClickEvents();
     initMesaModalEvents();
     initOrderModalEvents();
-    connectTableWebSocket();
+    
+    websocketManager.connect(() => {
+        websocketManager.subscribe('/topic/table-status', updateTableInView);
+        websocketManager.subscribe('/topic/plate-updates', updatePlateInOrderModal);
+    });
+    
     mesasInitialized = true;
 }
 

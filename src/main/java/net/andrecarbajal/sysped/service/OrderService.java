@@ -5,8 +5,15 @@ import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.controller.OrderWebSocketController;
 import net.andrecarbajal.sysped.dto.OrderCreateRequestDto;
 import net.andrecarbajal.sysped.dto.OrderCreateResponseDto;
+import net.andrecarbajal.sysped.dto.OrderDto;
 import net.andrecarbajal.sysped.dto.OrderItemResponseDto;
-import net.andrecarbajal.sysped.model.*;
+import net.andrecarbajal.sysped.model.Order;
+import net.andrecarbajal.sysped.model.OrderDetails;
+import net.andrecarbajal.sysped.model.OrderStatus;
+import net.andrecarbajal.sysped.model.Plate;
+import net.andrecarbajal.sysped.model.RestaurantTable;
+import net.andrecarbajal.sysped.model.Staff;
+import net.andrecarbajal.sysped.model.TableStatus;
 import net.andrecarbajal.sysped.repository.OrderRepository;
 import net.andrecarbajal.sysped.repository.PlateRepository;
 import net.andrecarbajal.sysped.repository.StaffRepository;
@@ -16,8 +23,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -75,24 +87,24 @@ public class OrderService {
 
         tableService.updateTableStatus(request.tableNumber(), TableStatus.ESPERANDO_PEDIDO);
 
-        // notify websocket
         try {
-            orderWebSocketController.sendOrderUpdate(new net.andrecarbajal.sysped.dto.OrderDto(
+            orderWebSocketController.sendOrderUpdate(new OrderDto(
                     savedOrder.getId(),
                     savedOrder.getRestaurantTable().getNumber(),
                     savedOrder.getDateandtimeOrder(),
                     savedOrder.getStatus(),
                     savedOrder.getPriceTotal(),
-                    savedOrder.getDetails().stream().map(d -> new net.andrecarbajal.sysped.dto.OrderItemResponseDto(
+                    savedOrder.getDetails().stream().map(d -> new OrderItemResponseDto(
                             d.getPlate().getId(),
                             d.getPlate().getName(),
                             d.getQuantity(),
                             d.getPriceUnit(),
-                            d.getPriceUnit().multiply(java.math.BigDecimal.valueOf(d.getQuantity())),
+                            d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
                             d.getNotes()
                     )).toList()
             ));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         List<OrderItemResponseDto> itemResponses = savedOrder.getDetails().stream()
                 .map(detail -> new OrderItemResponseDto(
@@ -115,121 +127,114 @@ public class OrderService {
         );
     }
 
-    public java.util.List<net.andrecarbajal.sysped.dto.OrderDto> listOrders(String statusFilter) {
-        java.util.List<net.andrecarbajal.sysped.model.Order> orders = orderRepository.findAll();
-        java.util.stream.Stream<net.andrecarbajal.sysped.model.Order> stream = orders.stream();
+    public List<OrderDto> listOrders(String statusFilter) {
+        List<Order> orders = orderRepository.findAll();
+        Stream<Order> stream = orders.stream();
         if (statusFilter != null && !"ALL".equalsIgnoreCase(statusFilter)) {
-            // aceptar lista de estados separados por comas: e.g. "PENDIENTE,EN_PREPARACION"
             String[] parts = statusFilter.split(",");
-            java.util.Set<net.andrecarbajal.sysped.model.OrderStatus> allowed = new java.util.HashSet<>();
+            Set<OrderStatus> allowed = new HashSet<>();
             for (String p : parts) {
                 String trimmed = p.trim();
                 if (trimmed.isEmpty()) continue;
                 try {
-                    allowed.add(net.andrecarbajal.sysped.model.OrderStatus.valueOf(trimmed));
+                    allowed.add(OrderStatus.valueOf(trimmed));
                 } catch (IllegalArgumentException e) {
-                    // ignorar valores inválidos
                 }
             }
             if (!allowed.isEmpty()) {
                 stream = stream.filter(o -> allowed.contains(o.getStatus()));
             } else {
-                // si no hay estados válidos, devolver vacio
-                return java.util.Collections.emptyList();
+                return Collections.emptyList();
             }
         }
-        return stream.map(o -> new net.andrecarbajal.sysped.dto.OrderDto(
+        return stream.map(o -> new OrderDto(
                 o.getId(),
                 o.getRestaurantTable().getNumber(),
                 o.getDateandtimeOrder(),
                 o.getStatus(),
                 o.getPriceTotal(),
-                o.getDetails().stream().map(d -> new net.andrecarbajal.sysped.dto.OrderItemResponseDto(
+                o.getDetails().stream().map(d -> new OrderItemResponseDto(
                         d.getPlate().getId(),
                         d.getPlate().getName(),
                         d.getQuantity(),
                         d.getPriceUnit(),
-                        d.getPriceUnit().multiply(java.math.BigDecimal.valueOf(d.getQuantity())),
+                        d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
                         d.getNotes()
                 )).toList()
         )).toList();
     }
 
     @Transactional
-    public net.andrecarbajal.sysped.dto.OrderDto updateOrderStatus(Long orderId, net.andrecarbajal.sysped.model.OrderStatus newStatus) {
-        net.andrecarbajal.sysped.model.Order order = orderRepository.findById(orderId)
+    public OrderDto updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + orderId));
-        // Validar transición de estado del pedido
-        net.andrecarbajal.sysped.model.OrderStatus current = order.getStatus();
-        java.util.Set<net.andrecarbajal.sysped.model.OrderStatus> allowed = switch (current) {
-            case PENDIENTE -> java.util.Set.of(net.andrecarbajal.sysped.model.OrderStatus.EN_PREPARACION, net.andrecarbajal.sysped.model.OrderStatus.CANCELADO);
-            case EN_PREPARACION -> java.util.Set.of(net.andrecarbajal.sysped.model.OrderStatus.LISTO, net.andrecarbajal.sysped.model.OrderStatus.CANCELADO);
-            case LISTO -> java.util.Set.of(net.andrecarbajal.sysped.model.OrderStatus.PAGADO);
-            default -> java.util.Set.of();
+        OrderStatus current = order.getStatus();
+        Set<OrderStatus> allowed = switch (current) {
+            case PENDIENTE -> Set.of(OrderStatus.EN_PREPARACION, OrderStatus.CANCELADO);
+            case EN_PREPARACION -> Set.of(OrderStatus.LISTO, OrderStatus.CANCELADO);
+            case LISTO -> Set.of(OrderStatus.PAGADO);
+            default -> Set.of();
         };
         if (!allowed.contains(newStatus)) {
             throw new IllegalStateException("Operación no permitida: " + current + " -> " + newStatus);
         }
         order.setStatus(newStatus);
-        net.andrecarbajal.sysped.model.Order saved = orderRepository.save(order);
-        // Cuando el pedido pasa a LISTO, marcar la mesa como PEDIDO_ENTREGADO
-        if (newStatus == net.andrecarbajal.sysped.model.OrderStatus.LISTO) {
+        Order saved = orderRepository.save(order);
+        if (newStatus == OrderStatus.LISTO) {
             try {
-                tableService.updateTableStatus(saved.getRestaurantTable().getNumber(), net.andrecarbajal.sysped.model.TableStatus.PEDIDO_ENTREGADO);
+                tableService.updateTableStatus(saved.getRestaurantTable().getNumber(), TableStatus.PEDIDO_ENTREGADO);
             } catch (IllegalStateException e) {
-                // Si la transición de estado de mesa no está permitida desde su estado actual,
-                // no queremos fallar toda la operación de cambiar el estado del pedido.
-                // Registramos y continuamos sin propagar la excepción.
                 System.err.println("No se pudo actualizar estado de mesa al marcar pedido LISTO: " + e.getMessage());
             }
         }
         try {
-            orderWebSocketController.sendOrderUpdate(new net.andrecarbajal.sysped.dto.OrderDto(
+            orderWebSocketController.sendOrderUpdate(new OrderDto(
                     saved.getId(),
                     saved.getRestaurantTable().getNumber(),
                     saved.getDateandtimeOrder(),
                     saved.getStatus(),
                     saved.getPriceTotal(),
-                    saved.getDetails().stream().map(d -> new net.andrecarbajal.sysped.dto.OrderItemResponseDto(
+                    saved.getDetails().stream().map(d -> new OrderItemResponseDto(
                             d.getPlate().getId(),
                             d.getPlate().getName(),
                             d.getQuantity(),
                             d.getPriceUnit(),
-                            d.getPriceUnit().multiply(java.math.BigDecimal.valueOf(d.getQuantity())),
+                            d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
                             d.getNotes()
                     )).toList()
             ));
-        } catch (Exception ignored) {}
-        return new net.andrecarbajal.sysped.dto.OrderDto(
+        } catch (Exception ignored) {
+        }
+        return new OrderDto(
                 saved.getId(),
                 saved.getRestaurantTable().getNumber(),
                 saved.getDateandtimeOrder(),
                 saved.getStatus(),
                 saved.getPriceTotal(),
-                saved.getDetails().stream().map(d -> new net.andrecarbajal.sysped.dto.OrderItemResponseDto(
+                saved.getDetails().stream().map(d -> new OrderItemResponseDto(
                         d.getPlate().getId(),
                         d.getPlate().getName(),
                         d.getQuantity(),
                         d.getPriceUnit(),
-                        d.getPriceUnit().multiply(java.math.BigDecimal.valueOf(d.getQuantity())),
+                        d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
                         d.getNotes()
                 )).toList()
         );
     }
 
-    public java.util.Optional<net.andrecarbajal.sysped.dto.OrderDto> getOrderById(Long orderId) {
-        return orderRepository.findById(orderId).map(o -> new net.andrecarbajal.sysped.dto.OrderDto(
+    public Optional<OrderDto> getOrderById(Long orderId) {
+        return orderRepository.findById(orderId).map(o -> new OrderDto(
                 o.getId(),
                 o.getRestaurantTable().getNumber(),
                 o.getDateandtimeOrder(),
                 o.getStatus(),
                 o.getPriceTotal(),
-                o.getDetails().stream().map(d -> new net.andrecarbajal.sysped.dto.OrderItemResponseDto(
+                o.getDetails().stream().map(d -> new OrderItemResponseDto(
                         d.getPlate().getId(),
                         d.getPlate().getName(),
                         d.getQuantity(),
                         d.getPriceUnit(),
-                        d.getPriceUnit().multiply(java.math.BigDecimal.valueOf(d.getQuantity())),
+                        d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
                         d.getNotes()
                 )).toList()
         ));

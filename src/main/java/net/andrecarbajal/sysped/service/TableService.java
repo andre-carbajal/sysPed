@@ -63,7 +63,7 @@ public class TableService {
 
     private Set<TableStatus> allowedFromStatus(TableStatus currentStatus) {
         return switch (currentStatus) {
-            case DISPONIBLE -> Set.of(TableStatus.FUERA_DE_SERVICIO, TableStatus.ESPERANDO_PEDIDO);
+            case DISPONIBLE -> Set.of(TableStatus.FUERA_DE_SERVICIO);
             case ESPERANDO_PEDIDO ->
                     Set.of(TableStatus.FALTA_ATENCION, TableStatus.PEDIDO_ENTREGADO, TableStatus.DISPONIBLE);
             case FALTA_ATENCION -> Set.of(TableStatus.DISPONIBLE, TableStatus.PEDIDO_ENTREGADO);

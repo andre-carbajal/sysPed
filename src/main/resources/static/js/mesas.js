@@ -373,10 +373,23 @@ function initOrderModalEvents() {
 
 function cleanupMesas() {
     if(mesasInitialized) {
-        websocketManager.unsubscribe('/topic/table-status');
+        websocketManager.unsubscribe('/topic/tableStatus');
         websocketManager.unsubscribe('/topic/plate-updates');
         mesasInitialized = false;
     }
+}
+
+function handleTableStatusUpdate(update) {
+    const tableId = String(update.tableNumber);
+    const newStatus = update.status;
+    const mesas = document.querySelectorAll(`.mesa[data-numero="${tableId}"]`);
+    if (mesas.length === 0) {
+        console.warn(`[WebSocket] No se encontró ninguna mesa con data-numero="${tableId}"`);
+    }
+    mesas.forEach(mesaElement => {
+        actualizarVistaMesa(mesaElement, newStatus);
+        actualizarResumen();
+    });
 }
 
 function initializeMesas() {
@@ -386,12 +399,12 @@ function initializeMesas() {
     initMesaClickEvents();
     initMesaModalEvents();
     initOrderModalEvents();
-    
+
     websocketManager.connect(() => {
-        websocketManager.subscribe('/topic/table-status', updateTableInView);
+        websocketManager.subscribe('/topic/table-status', handleTableStatusUpdate);
         websocketManager.subscribe('/topic/plate-updates', updatePlateInOrderModal);
     });
-    
+
     mesasInitialized = true;
 }
 

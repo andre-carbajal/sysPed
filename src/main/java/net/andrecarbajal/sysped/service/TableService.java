@@ -2,6 +2,7 @@ package net.andrecarbajal.sysped.service;
 
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.dto.TableResponseDto;
+import net.andrecarbajal.sysped.dto.TableStatusUpdateDto;
 import net.andrecarbajal.sysped.dto.TableSummaryDto;
 import net.andrecarbajal.sysped.model.RestaurantTable;
 import net.andrecarbajal.sysped.model.TableStatus;
@@ -16,9 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TableService {
-
     private final TableRepository tableRepository;
-
     private final SimpMessagingTemplate messagingTemplate;
 
     public List<TableResponseDto> getOperativeTables() {
@@ -77,6 +76,15 @@ public class TableService {
         RestaurantTable restaurantTable = tableRepository.findByNumber(tableNumber)
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada: " + tableNumber));
         return allowedFromStatus(restaurantTable.getStatus());
+    }
+
+    public void changeStatus(Long id, TableStatus newStatus) {
+        RestaurantTable table = tableRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Table not found"));
+        table.setStatus(newStatus);
+        tableRepository.save(table);
+        messagingTemplate.convertAndSend("/topic/table-status",
+                new TableStatusUpdateDto(table.getNumber(), newStatus.name()));
     }
 
     private TableResponseDto convertToDTO(RestaurantTable restaurantTable) {

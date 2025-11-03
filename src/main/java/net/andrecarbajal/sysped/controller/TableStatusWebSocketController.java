@@ -19,6 +19,7 @@ public class TableStatusWebSocketController {
         try {
             TableStatus newStatus = TableStatus.valueOf(dto.status());
             tableService.updateTableStatus(dto.tableNumber(), newStatus);
+            messagingTemplate.convertAndSend("/topic/table-status", dto);
         } catch (IllegalArgumentException e) {
             messagingTemplate.convertAndSend("/topic/table-errors", "Estado no válido: " + dto.status());
         } catch (Exception e) {

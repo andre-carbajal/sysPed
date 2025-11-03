@@ -9,7 +9,7 @@ import java.security.SecureRandom;
 @Service
 public class CaptchaService {
     private static final String CHARACTERS = "ABCDEFGHJKMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789";
-    private static final int CAPTCHA_LENGTH = 6;
+    private static final int CAPTCHA_LENGTH = 4;
     private static final SecureRandom random = new SecureRandom();
 
     public String generateCaptchaCode() {
@@ -30,13 +30,6 @@ public class CaptchaService {
         g2d.fillRect(0, 0, width, height);
 
         g2d.setColor(Color.LIGHT_GRAY);
-        for (int i = 0; i < 10; i++) {
-            int x1 = random.nextInt(width);
-            int y1 = random.nextInt(height);
-            int x2 = random.nextInt(width);
-            int y2 = random.nextInt(height);
-            g2d.drawLine(x1, y1, x2, y2);
-        }
 
         g2d.setFont(new Font("Consolas", Font.BOLD, 34));
         g2d.setColor(Color.BLACK);

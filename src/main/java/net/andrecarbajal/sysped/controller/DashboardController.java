@@ -76,9 +76,7 @@ public class DashboardController {
     }
 
     @GetMapping("/cocinero_fragment")
-    public String cocineroFragment(Model model) {
-        // El fragmento del cocinero no requiere datos complejos por ahora;
-        // se cargará mediante fetch REST desde el JS (lista de pedidos y actualizaciones).
+    public String cocineroFragment() {
         return "fragments/cocinero";
     }
 }

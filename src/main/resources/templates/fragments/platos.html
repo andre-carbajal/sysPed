@@ -1,72 +1,40 @@
-<div class="platos-grid-container">
+<div class="platos-grid-container"
+     th:with="isCocinero=${#authorization.expression('hasRole(''COCINERO'')')},isAdminOrJefe=${#authorization.expression('hasRole(''ADMINISTRADOR'') or hasRole(''JEFE'')')}">
     <h2 style="font-size:2em;color:#2a3a7a;margin-bottom:2rem;text-align:center;font-weight:bold;">Lista de Platos</h2>
     <div th:each="category,catStat : ${categories}" class="category-section">
         <h3 th:text="${category.name}" th:attr="data-cat-idx=${catStat.index}"></h3>
         <div class="category-content" th:attr="data-cat-idx=${catStat.index}">
             <div th:if="${#lists.size(category.plates.?[subcategory == null]) > 0}" class="platos-grid">
                 <div th:each="plate : ${category.plates}" th:if="${plate.subcategory == null}">
-                    <span sec:authorize="hasRole('COCINERO')">
-                        <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
-                             data-cocinero="true"
-                             th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                            <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}"
-                                 alt="Imagen del plato" class="plato-img"/>
-                            <div class="plato-info">
-                                <h3 th:text="${plate.name}"></h3>
-                                <p th:text="${plate.description}"></p>
-                                <span class="plato-price">S/ <span
-                                        th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
-                            </div>
+                    <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
+                         th:attr="data-cocinero=${isCocinero} ? 'true' : null,data-admin=${isAdminOrJefe} ? 'true' : null,data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
+                        <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}"
+                             alt="Imagen del plato" class="plato-img"/>
+                        <div class="plato-info">
+                            <h3 th:text="${plate.name}"></h3>
+                            <p th:text="${plate.description}"></p>
+                            <span class="plato-price">S/ <span
+                                    th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
                         </div>
-                    </span>
-                    <span sec:authorize="!hasRole('COCINERO')">
-                        <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
-                             th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                            <img th:if="${plate.imageBase64}" th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}"
-                                 alt="Imagen del plato" class="plato-img"/>
-                            <div class="plato-info">
-                                <h3 th:text="${plate.name}"></h3>
-                                <p th:text="${plate.description}"></p>
-                                <span class="plato-price">S/ <span
-                                        th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
-                            </div>
-                        </div>
-                    </span>
+                    </div>
                 </div>
             </div>
             <div th:each="subcategory : ${category.subcategories}" class="subcategory-section">
                 <h4 th:text="${subcategory.name}"></h4>
                 <div th:if="${#lists.size(subcategory.plates) > 0}" class="platos-grid">
                     <div th:each="plate : ${subcategory.plates}">
-                        <span sec:authorize="hasRole('COCINERO')">
-                            <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
-                                 data-cocinero="true"
-                                 th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                                <img th:if="${plate.imageBase64}"
-                                     th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato"
-                                     class="plato-img"/>
-                                <div class="plato-info">
-                                    <h3 th:text="${plate.name}"></h3>
-                                    <p th:text="${plate.description}"></p>
-                                    <span class="plato-price">S/ <span
-                                            th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
-                                </div>
+                        <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
+                             th:attr="data-cocinero=${isCocinero} ? 'true' : null,data-admin=${isAdminOrJefe} ? 'true' : null,data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
+                            <img th:if="${plate.imageBase64}"
+                                 th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato"
+                                 class="plato-img"/>
+                            <div class="plato-info">
+                                <h3 th:text="${plate.name}"></h3>
+                                <p th:text="${plate.description}"></p>
+                                <span class="plato-price">S/ <span
+                                        th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
                             </div>
-                        </span>
-                        <span sec:authorize="!hasRole('COCINERO')">
-                            <div th:class="${plate.active} ? 'plato-card' : 'plato-card plato-inactivo'"
-                                 th:attr="data-plate-id=${plate.id},data-active=${plate.active},data-name=${plate.name},data-description=${plate.description},data-price=${plate.price},data-image-base64=${plate.imageBase64}">
-                                <img th:if="${plate.imageBase64}"
-                                     th:src="'data:image/jpeg;base64,' + ${plate.imageBase64}" alt="Imagen del plato"
-                                     class="plato-img"/>
-                                <div class="plato-info">
-                                    <h3 th:text="${plate.name}"></h3>
-                                    <p th:text="${plate.description}"></p>
-                                    <span class="plato-price">S/ <span
-                                            th:text="${#numbers.formatDecimal(plate.price, 1, 'POINT', 2, 'COMMA')}"></span></span>
-                                </div>
-                            </div>
-                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,7 +68,6 @@
                     <input type="file" id="plateImage" name="image" accept="image/*">
                 </div>
                 <div class="form-group">
-                    <!-- usar clase para que el checkbox y el texto queden alineados en la misma línea (texto primero, checkbox después) -->
                     <label for="plateActive" class="checkbox-label">
                         <span>Activo</span>
                         <input type="checkbox" id="plateActive" name="active">

@@ -34,11 +34,12 @@ function initPlatoCardToggleEvents() {
         body.removeEventListener('click', body._platoCardHandler);
     }
 
-    body._platoCardHandler = function(e) {
+    body._platoCardHandler = function (e) {
         const card = e.target.closest('.plato-card');
         if (!card) return;
 
         const isCocinero = card.hasAttribute('data-cocinero');
+        const isAdmin = card.hasAttribute('data-admin');
         const plateId = card.getAttribute('data-plate-id');
 
         if (isCocinero) {
@@ -55,25 +56,25 @@ function initPlatoCardToggleEvents() {
                 },
                 body: `plateId=${plateId}&active=${newActive}`
             })
-            .then(response => response.text())
-            .then(result => {
-                if (result === 'OK') {
-                    card.setAttribute('data-active', newActive);
-                    if (newActive) {
-                        card.classList.remove('plato-inactivo');
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'OK') {
+                        card.setAttribute('data-active', newActive);
+                        if (newActive) {
+                            card.classList.remove('plato-inactivo');
+                        } else {
+                            card.classList.add('plato-inactivo');
+                        }
                     } else {
-                        card.classList.add('plato-inactivo');
+                        alert(result);
                     }
-                } else {
-                    alert(result);
-                }
-                card.style.pointerEvents = '';
-            })
-            .catch(() => {
-                alert('Error de red');
-                card.style.pointerEvents = '';
-            });
-        } else {
+                    card.style.pointerEvents = '';
+                })
+                .catch(() => {
+                    alert('Error de red');
+                    card.style.pointerEvents = '';
+                });
+        } else if (isAdmin) {
             openUpdatePlateModal(card);
         }
     };
@@ -116,7 +117,7 @@ function connectPlateStatusWebSocket() {
 function disconnectPlateStatusWebSocket() {
     if (stompClient !== null && isPlateStompConnected) {
         try {
-            stompClient.disconnect(function() {
+            stompClient.disconnect(function () {
                 console.log('WebSocket de platos desconectado');
             });
             isPlateStompConnected = false;
@@ -189,7 +190,7 @@ function updatePlateInView(plate) {
         descEl.textContent = plate.description;
 
         const priceEl = card.querySelector('.plato-price span');
-        priceEl.textContent = new Intl.NumberFormat('es-PE', { minimumFractionDigits: 2 }).format(plate.price);
+        priceEl.textContent = new Intl.NumberFormat('es-PE', {minimumFractionDigits: 2}).format(plate.price);
 
         card.classList.toggle('plato-inactivo', !plate.active);
     }
@@ -208,7 +209,7 @@ function initializePlatos() {
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         if (!platosInitialized) {
             initializePlatos();
         }
@@ -246,7 +247,7 @@ function initPlatoModalEvents() {
     cancelBtn._cancelHandler = closeUpdatePlateModal;
     cancelBtn.addEventListener('click', cancelBtn._cancelHandler);
 
-    form._submitHandler = function(event) {
+    form._submitHandler = function (event) {
         event.preventDefault();
         savePlateUpdate();
     };
@@ -261,7 +262,7 @@ function savePlateUpdate() {
     const imageFile = formData.get('image');
     if (imageFile && imageFile.size > 0) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const base64Image = e.target.result.split(',')[1]; // Remove data:image/... prefix
             formData.set('imageBase64', base64Image);
             formData.delete('image');
@@ -297,15 +298,15 @@ function submitPlateUpdate(plateId, formData) {
         },
         body: body
     })
-    .then(response => response.text())
-    .then(result => {
-        if (result === 'OK') {
-            closeUpdatePlateModal();
-        } else {
-            alert(result);
-        }
-    })
-    .catch(() => {
-        alert('Error de red');
-    });
+        .then(response => response.text())
+        .then(result => {
+            if (result === 'OK') {
+                closeUpdatePlateModal();
+            } else {
+                alert(result);
+            }
+        })
+        .catch(() => {
+            alert('Error de red');
+        });
 }

@@ -120,23 +120,6 @@ function actualizarVistaMesa(mesaElement, statusEnum) {
     mesaElement.setAttribute('data-status-enum', statusEnum);
 }
 
-function getAllowedStatusesForTable(currentStatus) {
-    switch (currentStatus) {
-        case 'DISPONIBLE':
-            return new Set(['FUERA_DE_SERVICIO']);
-        case 'ESPERANDO_PEDIDO':
-            return new Set(['FALTA_ATENCION', 'PEDIDO_ENTREGADO', 'DISPONIBLE']);
-        case 'FALTA_ATENCION':
-            return new Set(['DISPONIBLE', 'PEDIDO_ENTREGADO']);
-        case 'PEDIDO_ENTREGADO':
-            return new Set(['DISPONIBLE', 'ESPERANDO_PEDIDO', 'FALTA_ATENCION']);
-        case 'FUERA_DE_SERVICIO':
-            return new Set(['DISPONIBLE']);
-        default:
-            return new Set();
-    }
-}
-
 function getManuallyAllowedStatusesForTable(currentStatus) {
     switch (currentStatus) {
         case 'DISPONIBLE':
@@ -144,7 +127,7 @@ function getManuallyAllowedStatusesForTable(currentStatus) {
         case 'ESPERANDO_PEDIDO':
             return new Set(['FALTA_ATENCION', 'PEDIDO_ENTREGADO']);
         case 'FALTA_ATENCION':
-            return new Set(['DISPONIBLE', 'PEDIDO_ENTREGADO']);
+            return new Set(['DISPONIBLE', 'PEDIDO_ENTREGADO', 'ESPERANDO_PEDIDO']);
         case 'PEDIDO_ENTREGADO':
             return new Set(['DISPONIBLE', 'FALTA_ATENCION']);
         case 'FUERA_DE_SERVICIO':
@@ -278,7 +261,7 @@ function initMesaModalEvents() {
                     .catch(err => {
                         const mesaEl = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
                         const current = mesaEl ? mesaEl.getAttribute('data-status-enum') || 'FUERA_DE_SERVICIO' : 'FUERA_DE_SERVICIO';
-                        const allowed = getAllowedStatusesForTable(current);
+                        const allowed = getManuallyAllowedStatusesForTable(current);
                         if (!allowed.has(status) && status !== current) {
                             showToast('Operación no permitida: ' + current + ' → ' + status);
                             return;

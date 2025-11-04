@@ -64,7 +64,7 @@ public class TableService {
             case DISPONIBLE -> Set.of(TableStatus.FUERA_DE_SERVICIO, TableStatus.ESPERANDO_PEDIDO);
             case ESPERANDO_PEDIDO ->
                     Set.of(TableStatus.FALTA_ATENCION, TableStatus.PEDIDO_ENTREGADO, TableStatus.DISPONIBLE);
-            case FALTA_ATENCION -> Set.of(TableStatus.DISPONIBLE, TableStatus.PEDIDO_ENTREGADO);
+            case FALTA_ATENCION -> Set.of(TableStatus.DISPONIBLE, TableStatus.PEDIDO_ENTREGADO, TableStatus.ESPERANDO_PEDIDO);
             case PEDIDO_ENTREGADO ->
                     Set.of(TableStatus.DISPONIBLE, TableStatus.ESPERANDO_PEDIDO, TableStatus.FALTA_ATENCION);
             case FUERA_DE_SERVICIO -> Set.of(TableStatus.DISPONIBLE);

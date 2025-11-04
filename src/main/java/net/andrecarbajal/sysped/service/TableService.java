@@ -2,7 +2,6 @@ package net.andrecarbajal.sysped.service;
 
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.dto.TableResponseDto;
-import net.andrecarbajal.sysped.dto.TableStatusUpdateDto;
 import net.andrecarbajal.sysped.dto.TableSummaryDto;
 import net.andrecarbajal.sysped.model.RestaurantTable;
 import net.andrecarbajal.sysped.model.TableStatus;
@@ -82,9 +81,9 @@ public class TableService {
         RestaurantTable table = tableRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Table not found"));
         table.setStatus(newStatus);
-        tableRepository.save(table);
-        messagingTemplate.convertAndSend("/topic/table-status",
-                new TableStatusUpdateDto(table.getNumber(), newStatus.name()));
+        RestaurantTable updatedTable = tableRepository.save(table);
+        TableResponseDto dto = convertToDTO(updatedTable);
+        messagingTemplate.convertAndSend("/topic/table-status", dto);
     }
 
     private TableResponseDto convertToDTO(RestaurantTable restaurantTable) {

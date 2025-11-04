@@ -38,8 +38,10 @@ function sendTableUpdate(tableNumber, newStatus) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({status: newStatus})
     }).then(resp => {
-        if(!resp.ok){
-           return resp.text().then(text => {throw new Error(text || 'Error al actualizar estado')})
+        if (!resp.ok) {
+            return resp.text().then(text => {
+                throw new Error(text || 'Error al actualizar estado')
+            })
         }
         // UI update will be triggered by websocket message.
         closeTableStatusModal();
@@ -135,6 +137,23 @@ function getAllowedStatusesForTable(currentStatus) {
     }
 }
 
+function getManuallyAllowedStatusesForTable(currentStatus) {
+    switch (currentStatus) {
+        case 'DISPONIBLE':
+            return new Set(['FUERA_DE_SERVICIO']);
+        case 'ESPERANDO_PEDIDO':
+            return new Set(['FALTA_ATENCION', 'PEDIDO_ENTREGADO']);
+        case 'FALTA_ATENCION':
+            return new Set(['DISPONIBLE', 'PEDIDO_ENTREGADO']);
+        case 'PEDIDO_ENTREGADO':
+            return new Set(['DISPONIBLE', 'FALTA_ATENCION']);
+        case 'FUERA_DE_SERVICIO':
+            return new Set(['DISPONIBLE']);
+        default:
+            return new Set();
+    }
+}
+
 function openTableStatusModal(mesaElement) {
     const overlay = document.getElementById('tableStatusModal');
     if (!overlay) return;
@@ -156,41 +175,19 @@ function openTableStatusModal(mesaElement) {
         }
     });
 
-    fetch(`/dashboard/tables/${tableNumber}/allowed-statuses`)
-        .then(resp => {
-            if (!resp.ok) throw new Error('No se pudo obtener estados permitidos');
-            return resp.json();
-        })
-        .then(allowedList => {
-            const allowedSet = new Set(allowedList);
-            overlay.querySelectorAll('.status-button').forEach(btn => {
-                const target = btn.dataset.status;
-                if (!allowedSet.has(target) && target !== currentStatus) {
-                    btn.disabled = true;
-                    btn.classList.add('status-button-disabled');
-                    btn.title = 'Operación no permitida desde ' + currentStatus;
-                } else {
-                    btn.disabled = false;
-                    btn.classList.remove('status-button-disabled');
-                    btn.title = '';
-                }
-            });
-        })
-        .catch(err => {
-            const allowed = getAllowedStatusesForTable(currentStatus);
-            overlay.querySelectorAll('.status-button').forEach(btn => {
-                const target = btn.dataset.status;
-                if (!allowed.has(target) && target !== currentStatus) {
-                    btn.disabled = true;
-                    btn.classList.add('status-button-disabled');
-                    btn.title = 'Operación no permitida desde ' + currentStatus;
-                } else {
-                    btn.disabled = false;
-                    btn.classList.remove('status-button-disabled');
-                    btn.title = '';
-                }
-            });
-        });
+    const allowedManual = getManuallyAllowedStatusesForTable(currentStatus);
+    overlay.querySelectorAll('.status-button').forEach(btn => {
+        const target = btn.dataset.status;
+        if (!allowedManual.has(target) && target !== currentStatus) {
+            btn.disabled = true;
+            btn.classList.add('status-button-disabled');
+            btn.title = 'Solo se puede cambiar manualmente a ciertos estados desde ' + currentStatus;
+        } else {
+            btn.disabled = false;
+            btn.classList.remove('status-button-disabled');
+            btn.title = '';
+        }
+    });
 
     if (crearPedidoSection) {
         if (currentStatus === 'DISPONIBLE') {
@@ -372,7 +369,7 @@ function initOrderModalEvents() {
 }
 
 function cleanupMesas() {
-    if(mesasInitialized) {
+    if (mesasInitialized) {
         websocketManager.unsubscribe('/topic/tableStatus');
         websocketManager.unsubscribe('/topic/plate-updates');
         mesasInitialized = false;
@@ -380,7 +377,7 @@ function cleanupMesas() {
 }
 
 function handleTableStatusUpdate(update) {
-    const tableId = String(update.tableNumber);
+    const tableId = String(update.number);
     const newStatus = update.status;
     const mesas = document.querySelectorAll(`.mesa[data-numero="${tableId}"]`);
     if (mesas.length === 0) {

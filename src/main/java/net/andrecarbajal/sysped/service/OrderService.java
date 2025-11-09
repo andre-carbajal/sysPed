@@ -241,6 +241,85 @@ public class OrderService {
         ));
     }
 
+    @Transactional
+    public OrderCreateResponseDto updateOrder(Long orderId, OrderCreateRequestDto request) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + orderId));
+
+        if (order.getStatus() != OrderStatus.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden editar pedidos pendientes");
+        }
+
+        // Clear existing details
+        order.getDetails().clear();
+
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (var item : request.items()) {
+            Plate plate = plateRepository.findById(item.plateId())
+                    .orElseThrow(() -> new IllegalArgumentException("Plato no encontrado: " + item.plateId()));
+
+            if (!Boolean.TRUE.equals(plate.isActive())) {
+                throw new IllegalStateException("El plato " + plate.getName() + " no está disponible");
+            }
+
+            OrderDetails detail = new OrderDetails();
+            detail.setOrder(order);
+            detail.setPlate(plate);
+            detail.setQuantity(item.quantity());
+            detail.setPriceUnit(plate.getPrice());
+            detail.setNotes(item.notes());
+
+            order.addOrderDetail(detail);
+
+            BigDecimal itemTotal = plate.getPrice().multiply(BigDecimal.valueOf(item.quantity()));
+            totalPrice = totalPrice.add(itemTotal);
+        }
+
+        order.setPriceTotal(totalPrice);
+
+        Order savedOrder = orderRepository.save(order);
+
+        try {
+            orderWebSocketController.sendOrderUpdate(new OrderDto(
+                    savedOrder.getId(),
+                    savedOrder.getRestaurantTable().getNumber(),
+                    savedOrder.getDateandtimeOrder(),
+                    savedOrder.getStatus(),
+                    savedOrder.getPriceTotal(),
+                    savedOrder.getDetails().stream().map(d -> new OrderItemResponseDto(
+                            d.getPlate().getId(),
+                            new PlateDto(d.getPlate().getId(), d.getPlate().getName(), d.getPlate().getDescription(), d.getPlate().getPrice(), d.getPlate().getImageBase64(), d.getPlate().isActive()),
+                            d.getQuantity(),
+                            d.getPriceUnit(),
+                            d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
+                            d.getNotes()
+                    )).toList()
+            ));
+        } catch (Exception ignored) {
+        }
+
+        List<OrderItemResponseDto> itemResponses = savedOrder.getDetails().stream()
+                .map(detail -> new OrderItemResponseDto(
+                        detail.getPlate().getId(),
+                        new PlateDto(detail.getPlate().getId(), detail.getPlate().getName(), detail.getPlate().getDescription(), detail.getPlate().getPrice(), detail.getPlate().getImageBase64(), detail.getPlate().isActive()),
+                        detail.getQuantity(),
+                        detail.getPriceUnit(),
+                        detail.getPriceUnit().multiply(BigDecimal.valueOf(detail.getQuantity())),
+                        detail.getNotes()
+                ))
+                .collect(Collectors.toList());
+
+        return new OrderCreateResponseDto(
+                savedOrder.getId(),
+                savedOrder.getRestaurantTable().getNumber(),
+                savedOrder.getDateandtimeOrder(),
+                savedOrder.getStatus(),
+                savedOrder.getPriceTotal(),
+                itemResponses
+        );
+    }
+
     public Optional<OrderDto> getPendingOrderByTableNumber(Integer tableNumber) {
         return orderRepository.findByRestaurantTable_NumberAndStatus(tableNumber, OrderStatus.PENDIENTE)
                 .map(o -> new OrderDto(

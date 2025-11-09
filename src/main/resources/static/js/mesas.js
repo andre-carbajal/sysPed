@@ -426,11 +426,15 @@ if (document.readyState === 'loading') {
 
 let currentOrderItems = [];
 let currentTableNumber = null;
+let currentOrderId = null;
 
 function openOrderModal(tableNumber) {
     currentTableNumber = tableNumber;
     currentOrderItems = [];
+    currentOrderId = null;
     document.getElementById('orderModalTableNumber').textContent = tableNumber;
+    document.getElementById('orderModalTitle').textContent = 'Crear Pedido';
+    document.getElementById('submitOrder').textContent = 'Crear Pedido';
     document.getElementById('orderModal').style.display = 'flex';
     loadAvailablePlates();
     updateOrderSummary();
@@ -440,6 +444,7 @@ function closeOrderModal() {
     document.getElementById('orderModal').style.display = 'none';
     currentOrderItems = [];
     currentTableNumber = null;
+    currentOrderId = null;
 }
 
 function loadAvailablePlates() {
@@ -453,6 +458,12 @@ function loadAvailablePlates() {
                 const plateDiv = document.createElement('div');
                 plateDiv.className = 'plate-item';
                 plateDiv.setAttribute('data-plate-id', plate.id);
+
+                // Find existing order item for this plate
+                const existingItem = currentOrderItems.find(item => item.plateId === plate.id);
+                const quantity = existingItem ? existingItem.quantity : 0;
+                const notes = existingItem ? existingItem.notes : '';
+
                 plateDiv.innerHTML = `
                     <div class="plate-info">
                         <h4>${plate.name}</h4>
@@ -461,9 +472,9 @@ function loadAvailablePlates() {
                     </div>
                     <div class="plate-controls">
                         <button class="btn-quantity" data-action="decrease" data-plate-id="${plate.id}">-</button>
-                        <span class="quantity-display" id="quantity-${plate.id}">0</span>
+                        <span class="quantity-display" id="quantity-${plate.id}">${quantity}</span>
                         <button class="btn-quantity" data-action="increase" data-plate-id="${plate.id}">+</button>
-                        <input type="text" class="notes-input" id="notes-${plate.id}" placeholder="Notas (opcional)">
+                        <input type="text" class="notes-input" id="notes-${plate.id}" placeholder="Notas (opcional)" value="${notes}">
                     </div>
                 `;
                 platesList.appendChild(plateDiv);
@@ -581,8 +592,11 @@ function submitOrder() {
         }))
     };
 
-    fetch('/dashboard/orders', {
-        method: 'POST',
+    const url = currentOrderId ? `/dashboard/orders/${currentOrderId}` : '/dashboard/orders';
+    const method = currentOrderId ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
         headers: {
             'Content-Type': 'application/json',
         },
@@ -596,17 +610,17 @@ function submitOrder() {
                     throw new Error(text || 'Datos inválidos para el pedido');
                 });
             } else {
-                throw new Error('Error al crear el pedido');
+                throw new Error('Error al ' + (currentOrderId ? 'actualizar' : 'crear') + ' el pedido');
             }
         })
         .then(data => {
-            showToast('Pedido creado exitosamente', 'success');
+            showToast('Pedido ' + (currentOrderId ? 'actualizado' : 'creado') + ' exitosamente', 'success');
             closeOrderModal();
             updateTableInView({number: currentTableNumber, status: 'ESPERANDO_PEDIDO'});
             actualizarResumen();
         })
         .catch(error => {
-            showToast(error.message || 'Error al crear el pedido');
+            showToast(error.message || 'Error al ' + (currentOrderId ? 'actualizar' : 'crear') + ' el pedido');
         });
 }
 
@@ -656,7 +670,8 @@ function displayOrderDetails(order, contentDiv) {
             </div>
             ${detail.notes ? `<div class="item-notes">Notas: ${detail.notes}</div>` : ''}
         </div>
-    `}).join('');
+    `
+    }).join('');
 
     contentDiv.innerHTML = `
         <div class="order-details">
@@ -671,6 +686,9 @@ function displayOrderDetails(order, contentDiv) {
             </div>
             <div class="order-total">
                 <strong>Total: S/ ${(order.totalPrice ? Number(order.totalPrice) : 0).toFixed(2)}</strong>
+            </div>
+            <div class="order-actions">
+                <button id="editOrderBtn" class="btn btn-edit-order">Editar</button>
             </div>
         </div>
     `;
@@ -699,6 +717,9 @@ function initViewOrderModalEvents() {
     if (modal._overlayClickHandler) {
         modal.removeEventListener('click', modal._overlayClickHandler);
     }
+    if (modal._editOrderHandler) {
+        modal.removeEventListener('click', modal._editOrderHandler);
+    }
 
     if (closeBtn) {
         closeBtn._closeHandler = closeViewOrderModal;
@@ -710,12 +731,65 @@ function initViewOrderModalEvents() {
         closeViewBtn.addEventListener('click', closeViewBtn._closeHandler);
     }
 
+    modal._editOrderHandler = function (event) {
+        const editBtn = event.target.closest('#editOrderBtn');
+        if (editBtn) {
+            const tableNumberSpan = document.getElementById('viewOrderModalTableNumber');
+            if (tableNumberSpan) {
+                const tableNumber = parseInt(tableNumberSpan.textContent);
+                openEditOrderModal(tableNumber);
+            }
+        }
+    };
+    modal.addEventListener('click', modal._editOrderHandler);
+
     modal._overlayClickHandler = function (event) {
         if (event.target === modal) {
             closeViewOrderModal();
         }
     };
     modal.addEventListener('click', modal._overlayClickHandler);
+}
+
+function openEditOrderModal(tableNumber) {
+    closeViewOrderModal();
+    currentTableNumber = tableNumber;
+    currentOrderItems = [];
+    currentOrderId = null;
+
+    fetch(`/dashboard/orders/table/${tableNumber}`)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('No se pudo cargar el pedido');
+            }
+        })
+        .then(order => {
+            currentOrderId = order.id;
+            order.details.forEach(detail => {
+                currentOrderItems.push({
+                    plateId: detail.plate.id,
+                    name: detail.plate.name,
+                    price: Number(detail.priceUnit),
+                    quantity: detail.quantity,
+                    notes: detail.notes || ''
+                });
+            });
+            const tableNumberEl = document.getElementById('orderModalTableNumber');
+            const titleEl = document.getElementById('orderModalTitle');
+            const submitEl = document.getElementById('submitOrder');
+            const modalEl = document.getElementById('orderModal');
+            if (tableNumberEl) tableNumberEl.textContent = tableNumber;
+            if (titleEl) titleEl.textContent = 'Editar Pedido';
+            if (submitEl) submitEl.textContent = 'Actualizar Pedido';
+            if (modalEl) modalEl.style.display = 'flex';
+            loadAvailablePlates();
+            updateOrderSummary();
+        })
+        .catch(error => {
+            showToast(error.message || 'Error al cargar el pedido para editar');
+        });
 }
 
 function showToast(message, type = 'error', duration = 5000) {

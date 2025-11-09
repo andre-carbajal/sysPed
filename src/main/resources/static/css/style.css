@@ -419,6 +419,34 @@ body {
     box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
 }
 
+.btn-ver-pedido-modal {
+    background: var(--color-azul);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.btn-ver-pedido-modal:hover {
+    background: #1976d2;
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-ver-pedido-modal:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
 .status-button-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

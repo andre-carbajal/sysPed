@@ -43,7 +43,6 @@ function sendTableUpdate(tableNumber, newStatus) {
                 throw new Error(text || 'Error al actualizar estado')
             })
         }
-        // UI update will be triggered by websocket message.
         closeTableStatusModal();
     }).catch(err => {
         showToast('Error al cambiar estado: ' + err.message);
@@ -175,9 +174,23 @@ function openTableStatusModal(mesaElement) {
     if (crearPedidoSection) {
         if (currentStatus === 'DISPONIBLE' || currentStatus === 'ESPERANDO_PEDIDO') {
             crearPedidoSection.style.display = 'block';
+            const btn = document.getElementById('crearPedidoBtn');
             const btnText = document.getElementById('crearPedidoBtnText');
-            if (btnText) {
-                btnText.textContent = currentStatus === 'DISPONIBLE' ? 'Crear Pedido' : 'Ver Pedido';
+            const svg = btn ? btn.querySelector('svg') : null;
+            if (btn && btnText) {
+                if (currentStatus === 'DISPONIBLE') {
+                    btnText.textContent = 'Crear Pedido';
+                    btn.className = 'btn btn-crear-pedido-modal';
+                    if (svg) {
+                        svg.innerHTML = '<path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z"/>';
+                    }
+                } else {
+                    btnText.textContent = 'Ver Pedido';
+                    btn.className = 'btn btn-ver-pedido-modal';
+                    if (svg) {
+                        svg.innerHTML = '<path d="M8 4C5.8 4 4 5.8 4 8s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM2 8c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6-6-2.7-6-6z"/>';
+                    }
+                }
             }
         } else {
             crearPedidoSection.style.display = 'none';
@@ -608,7 +621,6 @@ function openViewOrderModal(tableNumber) {
     contentDiv.innerHTML = '<p>Cargando pedido...</p>';
     modal.style.display = 'flex';
 
-    // Fetch order details
     fetch(`/dashboard/orders/table/${tableNumber}`)
         .then(response => {
             if (response.ok) {

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 public record OrderItemResponseDto(
     Long plateId,
-    String plateName,
+    PlateDto plate,
     int quantity,
     BigDecimal priceUnit,
     BigDecimal totalPrice,

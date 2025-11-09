@@ -173,8 +173,12 @@ function openTableStatusModal(mesaElement) {
     });
 
     if (crearPedidoSection) {
-        if (currentStatus === 'DISPONIBLE') {
+        if (currentStatus === 'DISPONIBLE' || currentStatus === 'ESPERANDO_PEDIDO') {
             crearPedidoSection.style.display = 'block';
+            const btnText = document.getElementById('crearPedidoBtnText');
+            if (btnText) {
+                btnText.textContent = currentStatus === 'DISPONIBLE' ? 'Crear Pedido' : 'Ver Pedido';
+            }
         } else {
             crearPedidoSection.style.display = 'none';
         }
@@ -229,8 +233,14 @@ function initMesaModalEvents() {
         crearPedidoBtn._crearPedidoHandler = function () {
             const tableNumber = document.getElementById('modalTableNumberInput').value;
             if (tableNumber) {
+                const mesaEl = document.querySelector(`.mesa[data-numero="${tableNumber}"]`);
+                const currentStatus = mesaEl ? mesaEl.getAttribute('data-status-enum') : 'FUERA_DE_SERVICIO';
                 closeTableStatusModal();
-                openOrderModal(parseInt(tableNumber));
+                if (currentStatus === 'DISPONIBLE') {
+                    openOrderModal(parseInt(tableNumber));
+                } else if (currentStatus === 'ESPERANDO_PEDIDO') {
+                    openViewOrderModal(parseInt(tableNumber));
+                }
             }
         };
         crearPedidoBtn.addEventListener('click', crearPedidoBtn._crearPedidoHandler);
@@ -379,6 +389,7 @@ function initializeMesas() {
     initMesaClickEvents();
     initMesaModalEvents();
     initOrderModalEvents();
+    initViewOrderModalEvents();
 
     websocketManager.connect(() => {
         websocketManager.subscribe('/topic/table-status', handleTableStatusUpdate);
@@ -584,6 +595,115 @@ function submitOrder() {
         .catch(error => {
             showToast(error.message || 'Error al crear el pedido');
         });
+}
+
+function openViewOrderModal(tableNumber) {
+    const modal = document.getElementById('viewOrderModal');
+    const tableNumberSpan = document.getElementById('viewOrderModalTableNumber');
+    const contentDiv = document.getElementById('viewOrderContent');
+
+    if (!modal || !tableNumberSpan || !contentDiv) return;
+
+    tableNumberSpan.textContent = tableNumber;
+    contentDiv.innerHTML = '<p>Cargando pedido...</p>';
+    modal.style.display = 'flex';
+
+    // Fetch order details
+    fetch(`/dashboard/orders/table/${tableNumber}`)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 404) {
+                throw new Error('No se encontró un pedido pendiente para esta mesa');
+            } else {
+                throw new Error('Error al cargar el pedido');
+            }
+        })
+        .then(order => {
+            displayOrderDetails(order, contentDiv);
+        })
+        .catch(error => {
+            contentDiv.innerHTML = `<p class="error">${error.message}</p>`;
+        });
+}
+
+function displayOrderDetails(order, contentDiv) {
+    if (!order.details || !Array.isArray(order.details)) {
+        contentDiv.innerHTML = '<p>No hay detalles del pedido disponibles.</p>';
+        return;
+    }
+
+    const itemsHtml = order.details.map(detail => {
+        const plateName = detail.plate && detail.plate.name ? detail.plate.name : 'Plato desconocido';
+        return `
+        <div class="order-item">
+            <div class="item-header">
+                <span class="item-name">${plateName}</span>
+                <span class="item-quantity">x${detail.quantity}</span>
+                <span class="item-price">S/ ${(Number(detail.priceUnit) * Number(detail.quantity)).toFixed(2)}</span>
+            </div>
+            ${detail.notes ? `<div class="item-notes">Notas: ${detail.notes}</div>` : ''}
+        </div>
+    `}).join('');
+
+    contentDiv.innerHTML = `
+        <div class="order-details">
+            <div class="order-info">
+                <p><strong>ID del Pedido:</strong> ${order.id}</p>
+                <p><strong>Estado:</strong> ${order.status}</p>
+                <p><strong>Fecha:</strong> ${new Date(order.dateAndTimeOrder).toLocaleString()}</p>
+            </div>
+            <div class="order-items">
+                <h4>Items del Pedido:</h4>
+                ${itemsHtml}
+            </div>
+            <div class="order-total">
+                <strong>Total: S/ ${(order.totalPrice ? Number(order.totalPrice) : 0).toFixed(2)}</strong>
+            </div>
+        </div>
+    `;
+}
+
+function closeViewOrderModal() {
+    const modal = document.getElementById('viewOrderModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function initViewOrderModalEvents() {
+    const modal = document.getElementById('viewOrderModal');
+    if (!modal) return;
+
+    const closeBtn = document.getElementById('closeViewOrderModal');
+    const closeViewBtn = document.getElementById('closeViewOrderBtn');
+
+    if (closeBtn && closeBtn._closeHandler) {
+        closeBtn.removeEventListener('click', closeBtn._closeHandler);
+    }
+    if (closeViewBtn && closeViewBtn._closeHandler) {
+        closeViewBtn.removeEventListener('click', closeViewBtn._closeHandler);
+    }
+    if (modal._overlayClickHandler) {
+        modal.removeEventListener('click', modal._overlayClickHandler);
+    }
+
+    if (closeBtn) {
+        closeBtn._closeHandler = closeViewOrderModal;
+        closeBtn.addEventListener('click', closeBtn._closeHandler);
+    }
+
+    if (closeViewBtn) {
+        closeViewBtn._closeHandler = closeViewOrderModal;
+        closeViewBtn.addEventListener('click', closeViewBtn._closeHandler);
+    }
+
+    modal._overlayClickHandler = function (event) {
+        if (event.target === modal) {
+            closeViewOrderModal();
+        }
+    };
+    modal.addEventListener('click', modal._overlayClickHandler);
 }
 
 function showToast(message, type = 'error', duration = 5000) {

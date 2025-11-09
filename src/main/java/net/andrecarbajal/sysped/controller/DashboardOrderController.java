@@ -4,11 +4,22 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.dto.OrderCreateRequestDto;
 import net.andrecarbajal.sysped.dto.OrderCreateResponseDto;
+import net.andrecarbajal.sysped.dto.OrderDto;
+import net.andrecarbajal.sysped.dto.OrderStatusChangeRequestDto;
 import net.andrecarbajal.sysped.dto.PlateListDto;
+import net.andrecarbajal.sysped.model.OrderStatus;
 import net.andrecarbajal.sysped.service.OrderService;
 import net.andrecarbajal.sysped.service.PlateService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -33,11 +44,10 @@ public class DashboardOrderController {
     }
 
     @GetMapping
-    public ResponseEntity<java.util.List<net.andrecarbajal.sysped.dto.OrderDto>> listOrders(@RequestParam(required = false) String status) {
+    public ResponseEntity<List<OrderDto>> listOrders(@RequestParam(required = false) String status) {
         try {
             String filter = status;
-            // Si es cocinero y no se recibió filtro, devolvemos pendientes y en preparacion
-            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean isCocinero = false;
             if (auth != null && auth.getAuthorities() != null) {
                 isCocinero = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().toUpperCase().contains("COCINERO"));
@@ -45,7 +55,7 @@ public class DashboardOrderController {
             if ((filter == null || filter.isBlank()) && isCocinero) {
                 filter = "PENDIENTE,EN_PREPARACION";
             }
-            java.util.List<net.andrecarbajal.sysped.dto.OrderDto> list = orderService.listOrders(filter == null ? "ALL" : filter);
+            List<OrderDto> list = orderService.listOrders(filter == null ? "ALL" : filter);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
@@ -53,11 +63,10 @@ public class DashboardOrderController {
     }
 
     @PostMapping("/{orderId}/status")
-    public ResponseEntity<Object> changeOrderStatus(@PathVariable Long orderId, @RequestBody net.andrecarbajal.sysped.dto.OrderStatusChangeRequestDto body) {
+    public ResponseEntity<Object> changeOrderStatus(@PathVariable Long orderId, @RequestBody OrderStatusChangeRequestDto body) {
         try {
-            net.andrecarbajal.sysped.model.OrderStatus st = net.andrecarbajal.sysped.model.OrderStatus.valueOf(body.status());
-            net.andrecarbajal.sysped.dto.OrderDto updated = orderService.updateOrderStatus(orderId, st);
-            // Se notificará por WebSocket desde el servicio (OrderService)
+            OrderStatus st = OrderStatus.valueOf(body.status());
+            OrderDto updated = orderService.updateOrderStatus(orderId, st);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Estado inválido: " + body.status());
@@ -70,10 +79,21 @@ public class DashboardOrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<net.andrecarbajal.sysped.dto.OrderDto> getOrder(@PathVariable Long orderId) {
+    public ResponseEntity<OrderDto> getOrder(@PathVariable Long orderId) {
         return orderService.getOrderById(orderId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/table/{tableNumber}")
+    public ResponseEntity<OrderDto> getPendingOrderByTable(@PathVariable Integer tableNumber) {
+        try {
+            return orderService.getPendingOrderByTableNumber(tableNumber)
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/plates")

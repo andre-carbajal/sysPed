@@ -52,7 +52,7 @@
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="margin-right: 6px;">
                             <path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z"/>
                         </svg>
-                        Crear Pedido
+                        <span id="crearPedidoBtnText">Crear Pedido</span>
                     </button>
                     <hr class="section-divider">
                 </div>
@@ -117,6 +117,23 @@
                 <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
                     <button type="button" class="btn btn-danger" id="cancelOrder">Cancelar</button>
                     <button type="button" class="btn btn-success" id="submitOrder">Crear Pedido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="viewOrderModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Ver Pedido - Mesa N° <span id="viewOrderModalTableNumber">?</span></h2>
+                <button class="modal-close" id="closeViewOrderModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="viewOrderContent">
+                    <!-- Order details will be populated here -->
+                </div>
+                <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-danger" id="closeViewOrderBtn">Cerrar</button>
                 </div>
             </div>
         </div>

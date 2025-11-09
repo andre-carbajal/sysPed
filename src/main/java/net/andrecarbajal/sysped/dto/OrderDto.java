@@ -12,17 +12,15 @@ public class OrderDto {
     public LocalDateTime dateAndTimeOrder;
     public OrderStatus status;
     public BigDecimal totalPrice;
-    public List<OrderItemResponseDto> items;
+    public List<OrderItemResponseDto> details;
 
-    public OrderDto() {}
-
-    public OrderDto(Long id, Integer tableNumber, LocalDateTime dateAndTimeOrder, OrderStatus status, BigDecimal totalPrice, List<OrderItemResponseDto> items) {
+    public OrderDto(Long id, Integer tableNumber, LocalDateTime dateAndTimeOrder, OrderStatus status, BigDecimal totalPrice, List<OrderItemResponseDto> details) {
         this.id = id;
         this.tableNumber = tableNumber;
         this.dateAndTimeOrder = dateAndTimeOrder;
         this.status = status;
         this.totalPrice = totalPrice;
-        this.items = items;
+        this.details = details;
     }
 }
 

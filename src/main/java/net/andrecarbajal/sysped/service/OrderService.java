@@ -7,6 +7,7 @@ import net.andrecarbajal.sysped.dto.OrderCreateRequestDto;
 import net.andrecarbajal.sysped.dto.OrderCreateResponseDto;
 import net.andrecarbajal.sysped.dto.OrderDto;
 import net.andrecarbajal.sysped.dto.OrderItemResponseDto;
+import net.andrecarbajal.sysped.dto.PlateDto;
 import net.andrecarbajal.sysped.model.Order;
 import net.andrecarbajal.sysped.model.OrderDetails;
 import net.andrecarbajal.sysped.model.OrderStatus;
@@ -96,7 +97,7 @@ public class OrderService {
                     savedOrder.getPriceTotal(),
                     savedOrder.getDetails().stream().map(d -> new OrderItemResponseDto(
                             d.getPlate().getId(),
-                            d.getPlate().getName(),
+                            new PlateDto(d.getPlate().getId(), d.getPlate().getName(), d.getPlate().getDescription(), d.getPlate().getPrice(), d.getPlate().getImageBase64(), d.getPlate().isActive()),
                             d.getQuantity(),
                             d.getPriceUnit(),
                             d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
@@ -109,7 +110,7 @@ public class OrderService {
         List<OrderItemResponseDto> itemResponses = savedOrder.getDetails().stream()
                 .map(detail -> new OrderItemResponseDto(
                         detail.getPlate().getId(),
-                        detail.getPlate().getName(),
+                        new PlateDto(detail.getPlate().getId(), detail.getPlate().getName(), detail.getPlate().getDescription(), detail.getPlate().getPrice(), detail.getPlate().getImageBase64(), detail.getPlate().isActive()),
                         detail.getQuantity(),
                         detail.getPriceUnit(),
                         detail.getPriceUnit().multiply(BigDecimal.valueOf(detail.getQuantity())),
@@ -155,7 +156,7 @@ public class OrderService {
                 o.getPriceTotal(),
                 o.getDetails().stream().map(d -> new OrderItemResponseDto(
                         d.getPlate().getId(),
-                        d.getPlate().getName(),
+                        new PlateDto(d.getPlate().getId(), d.getPlate().getName(), d.getPlate().getDescription(), d.getPlate().getPrice(), d.getPlate().getImageBase64(), d.getPlate().isActive()),
                         d.getQuantity(),
                         d.getPriceUnit(),
                         d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
@@ -196,7 +197,7 @@ public class OrderService {
                     saved.getPriceTotal(),
                     saved.getDetails().stream().map(d -> new OrderItemResponseDto(
                             d.getPlate().getId(),
-                            d.getPlate().getName(),
+                            new PlateDto(d.getPlate().getId(), d.getPlate().getName(), d.getPlate().getDescription(), d.getPlate().getPrice(), d.getPlate().getImageBase64(), d.getPlate().isActive()),
                             d.getQuantity(),
                             d.getPriceUnit(),
                             d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
@@ -213,7 +214,7 @@ public class OrderService {
                 saved.getPriceTotal(),
                 saved.getDetails().stream().map(d -> new OrderItemResponseDto(
                         d.getPlate().getId(),
-                        d.getPlate().getName(),
+                        new PlateDto(d.getPlate().getId(), d.getPlate().getName(), d.getPlate().getDescription(), d.getPlate().getPrice(), d.getPlate().getImageBase64(), d.getPlate().isActive()),
                         d.getQuantity(),
                         d.getPriceUnit(),
                         d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
@@ -231,13 +232,32 @@ public class OrderService {
                 o.getPriceTotal(),
                 o.getDetails().stream().map(d -> new OrderItemResponseDto(
                         d.getPlate().getId(),
-                        d.getPlate().getName(),
+                        new PlateDto(d.getPlate().getId(), d.getPlate().getName(), d.getPlate().getDescription(), d.getPlate().getPrice(), d.getPlate().getImageBase64(), d.getPlate().isActive()),
                         d.getQuantity(),
                         d.getPriceUnit(),
                         d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
                         d.getNotes()
                 )).toList()
         ));
+    }
+
+    public Optional<OrderDto> getPendingOrderByTableNumber(Integer tableNumber) {
+        return orderRepository.findByRestaurantTable_NumberAndStatus(tableNumber, OrderStatus.PENDIENTE)
+                .map(o -> new OrderDto(
+                        o.getId(),
+                        o.getRestaurantTable().getNumber(),
+                        o.getDateandtimeOrder(),
+                        o.getStatus(),
+                        o.getPriceTotal(),
+                        o.getDetails().stream().map(d -> new OrderItemResponseDto(
+                                d.getPlate().getId(),
+                                new PlateDto(d.getPlate().getId(), d.getPlate().getName(), d.getPlate().getDescription(), d.getPlate().getPrice(), d.getPlate().getImageBase64(), d.getPlate().isActive()),
+                                d.getQuantity(),
+                                d.getPriceUnit(),
+                                d.getPriceUnit().multiply(BigDecimal.valueOf(d.getQuantity())),
+                                d.getNotes()
+                        )).toList()
+                ));
     }
 
     private Staff getCurrentStaff() {

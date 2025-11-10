@@ -4,7 +4,7 @@ services:
   db:
     image: mysql:8.0
     container_name: sysped-db
-    restart: on-failure
+    restart: unless-stopped
     env_file: .env
     environment:
       MYSQL_DATABASE: ${DB_NAME}
@@ -37,14 +37,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    restart: on-failure
+    restart: unless-stopped
     networks:
       - default
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared-sysped
-    restart: on-failure
+    restart: unless-stopped
     depends_on:
       - app
     env_file:

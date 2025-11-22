@@ -136,6 +136,13 @@ public class OrderService {
                 System.err.println("No se pudo actualizar estado de mesa al marcar pedido LISTO: " + e.getMessage());
             }
         }
+        if (newStatus == OrderStatus.CANCELADO) {
+            try {
+                tableService.updateTableStatus(saved.getRestaurantTable().getNumber(), TableStatus.DISPONIBLE);
+            } catch (IllegalStateException e) {
+                System.err.println("No se pudo actualizar estado de mesa al cancelar pedido: " + e.getMessage());
+            }
+        }
         try {
             orderWebSocketController.sendOrderUpdate(OrderMapper.toDto(saved));
         } catch (Exception ignored) {

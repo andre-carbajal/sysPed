@@ -1,5 +1,36 @@
 let mesasInitialized = false;
 
+async function verificarPedidoListo(tableNumber) {
+    try {
+        const response = await fetch(`/dashboard/orders/table/${tableNumber}`);
+        if (response.ok) {
+            const order = await response.json();
+            return order.status === 'LISTO';
+        }
+        return false;
+    } catch (error) {
+        console.error('Error al verificar pedido listo:', error);
+        return false;
+    }
+}
+
+function actualizarIndicadorPedidoListo(mesaElement, mostrar) {
+    let badge = mesaElement.querySelector('.pedido-listo-badge');
+    
+    if (mostrar) {
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'pedido-listo-badge';
+            badge.innerHTML = '🔔 Pedido Listo';
+            mesaElement.appendChild(badge);
+        }
+    } else {
+        if (badge) {
+            badge.remove();
+        }
+    }
+}
+
 function updateTableInView(tableDTO) {
     const mesaElement = document.querySelector(`.mesa[data-numero="${tableDTO.number}"]`);
     if (mesaElement) {
@@ -77,7 +108,7 @@ function initMesasFromDOM() {
     actualizarResumen();
 }
 
-function actualizarVistaMesa(mesaElement, statusEnum) {
+async function actualizarVistaMesa(mesaElement, statusEnum) {
     mesaElement.classList.remove('mesa-gris', 'mesa-verde', 'mesa-azul', 'mesa-amarillo', 'mesa-rojo');
 
     let claseColor = 'mesa-gris';
@@ -112,6 +143,14 @@ function actualizarVistaMesa(mesaElement, statusEnum) {
     const estadoEl = mesaElement.querySelector('.mesa-estado');
     if (estadoEl) estadoEl.textContent = textoEstado;
     mesaElement.setAttribute('data-status-enum', statusEnum);
+
+    if (statusEnum === 'ESPERANDO_PEDIDO') {
+        const tableNumber = mesaElement.getAttribute('data-numero');
+        const tienePedidoListo = await verificarPedidoListo(tableNumber);
+        actualizarIndicadorPedidoListo(mesaElement, tienePedidoListo);
+    } else {
+        actualizarIndicadorPedidoListo(mesaElement, false);
+    }
 }
 
 function getManuallyAllowedStatusesForTable(currentStatus) {
@@ -396,8 +435,9 @@ function initOrderModalEvents() {
 
 function cleanupMesas() {
     if (mesasInitialized) {
-        websocketManager.unsubscribe('/topic/tableStatus');
+        websocketManager.unsubscribe('/topic/table-status');
         websocketManager.unsubscribe('/topic/plate-updates');
+        websocketManager.unsubscribe('/topic/orders');
         mesasInitialized = false;
     }
 }
@@ -415,6 +455,19 @@ function handleTableStatusUpdate(update) {
     });
 }
 
+function handleOrderStatusUpdate(orderUpdate) {
+    if (orderUpdate && orderUpdate.tableNumber) {
+        const mesaElement = document.querySelector(`.mesa[data-numero="${orderUpdate.tableNumber}"]`);
+        if (mesaElement) {
+            const currentStatus = mesaElement.getAttribute('data-status-enum');
+            if (currentStatus === 'ESPERANDO_PEDIDO') {
+                const tienePedidoListo = orderUpdate.status === 'LISTO';
+                actualizarIndicadorPedidoListo(mesaElement, tienePedidoListo);
+            }
+        }
+    }
+}
+
 function initializeMesas() {
     if (mesasInitialized) return;
 
@@ -428,6 +481,7 @@ function initializeMesas() {
     websocketManager.connect(() => {
         websocketManager.subscribe('/topic/table-status', handleTableStatusUpdate);
         websocketManager.subscribe('/topic/plate-updates', updatePlateInOrderModal);
+        websocketManager.subscribe('/topic/orders', handleOrderStatusUpdate);
     });
 
     mesasInitialized = true;

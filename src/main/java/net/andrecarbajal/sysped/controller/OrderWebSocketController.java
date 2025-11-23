@@ -11,7 +11,7 @@ public class OrderWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
 
     public void sendOrderUpdate(OrderDto orderDto) {
-        messagingTemplate.convertAndSend("/topic/order-updates", orderDto);
+        messagingTemplate.convertAndSend("/topic/orders", orderDto);
     }
 }
 

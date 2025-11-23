@@ -129,13 +129,6 @@ public class OrderService {
         }
         order.setStatus(newStatus);
         Order saved = orderRepository.save(order);
-        if (newStatus == OrderStatus.LISTO) {
-            try {
-                tableService.updateTableStatus(saved.getRestaurantTable().getNumber(), TableStatus.PEDIDO_ENTREGADO);
-            } catch (IllegalStateException e) {
-                System.err.println("No se pudo actualizar estado de mesa al marcar pedido LISTO: " + e.getMessage());
-            }
-        }
         if (newStatus == OrderStatus.CANCELADO) {
             try {
                 tableService.updateTableStatus(saved.getRestaurantTable().getNumber(), TableStatus.DISPONIBLE);

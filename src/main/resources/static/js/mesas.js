@@ -35,8 +35,8 @@ function sendTableUpdate(tableNumber, newStatus) {
     const url = `/dashboard/tables/${tableNumber}/status`;
     fetch(url, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({status: newStatus})
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
     }).then(resp => {
         if (!resp.ok) {
             return resp.text().then(text => {
@@ -56,15 +56,10 @@ function actualizarResumen() {
     const countAm = mesasEls.filter(el => el.classList.contains('mesa-amarillo')).length;
     const countR = mesasEls.filter(el => el.classList.contains('mesa-rojo')).length;
 
-    const elVerde = document.getElementById('countVerde');
-    const elAzul = document.getElementById('countAzul');
-    const elAmar = document.getElementById('countAmarillo');
-    const elRojo = document.getElementById('countRojo');
-
-    if (elVerde) elVerde.textContent = countV;
-    if (elAzul) elAzul.textContent = countA;
-    if (elAmar) elAmar.textContent = countAm;
-    if (elRojo) elRojo.textContent = countR;
+    document.querySelectorAll('.count-verde').forEach(el => el.textContent = countV);
+    document.querySelectorAll('.count-azul').forEach(el => el.textContent = countA);
+    document.querySelectorAll('.count-amarillo').forEach(el => el.textContent = countAm);
+    document.querySelectorAll('.count-rojo').forEach(el => el.textContent = countR);
 }
 
 function initMesasFromDOM() {
@@ -297,6 +292,31 @@ function initMesaModalEvents() {
     overlay.addEventListener('click', overlay._statusButtonHandler);
 }
 
+
+
+function initSidebarToggle() {
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebarContent');
+
+    if (toggleBtn && sidebar) {
+        // Remove existing listener if any (to avoid duplicates on re-init)
+        if (toggleBtn._clickHandler) {
+            toggleBtn.removeEventListener('click', toggleBtn._clickHandler);
+        }
+
+        toggleBtn._clickHandler = function () {
+            sidebar.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+            const icon = toggleBtn.querySelector('.toggle-icon');
+            if (icon) {
+                icon.style.transform = sidebar.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        };
+
+        toggleBtn.addEventListener('click', toggleBtn._clickHandler);
+    }
+}
+
 function initOrderModalEvents() {
     const overlay = document.getElementById('orderModal');
     if (!overlay) return;
@@ -400,6 +420,7 @@ function initializeMesas() {
 
     initMesasFromDOM();
     initMesaClickEvents();
+    // Sidebar toggle removed
     initMesaModalEvents();
     initOrderModalEvents();
     initViewOrderModalEvents();
@@ -616,7 +637,7 @@ function submitOrder() {
         .then(data => {
             showToast('Pedido ' + (currentOrderId ? 'actualizado' : 'creado') + ' exitosamente', 'success');
             closeOrderModal();
-            updateTableInView({number: currentTableNumber, status: 'ESPERANDO_PEDIDO'});
+            updateTableInView({ number: currentTableNumber, status: 'ESPERANDO_PEDIDO' });
             actualizarResumen();
         })
         .catch(error => {

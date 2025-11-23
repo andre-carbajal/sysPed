@@ -104,7 +104,6 @@ body {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 16px;
-    height: 100%;
 }
 
 .mesa {
@@ -656,6 +655,12 @@ body {
         padding: 12px;
         height: auto;
         min-height: 100vh;
+    }
+
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
     }
 
     .sidebar {
@@ -1646,8 +1651,8 @@ div#dynamicTabContent {
     .app-container {
         display: flex;
         flex-direction: column;
-        height: 100vh;
-        overflow: hidden;
+        height: auto;
+        min-height: 100vh;
     }
 
     .header {

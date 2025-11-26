@@ -76,3 +76,16 @@ CREATE TABLE order_details (
     FOREIGN KEY (plate_id) REFERENCES plates(id)
 );
 
+CREATE TABLE receipts (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    order_id BIGINT NOT NULL UNIQUE,
+    ruc VARCHAR(11) NULL,
+    dni VARCHAR(8) NULL,
+    customer_name VARCHAR(120) NULL,
+    discount DECIMAL(13,2) NOT NULL DEFAULT 0.00,
+    subtotal DECIMAL(13,2) NOT NULL,
+    igv DECIMAL(13,2) NOT NULL,
+    total DECIMAL(13,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);
+

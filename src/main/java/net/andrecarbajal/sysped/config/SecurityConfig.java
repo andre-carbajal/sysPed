@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/dashboard/plate/set-active").hasAnyRole("ADMINISTRADOR", "JEFE", "COCINERO")
                         .requestMatchers("/dashboard/plate/update").hasAnyRole("ADMINISTRADOR", "JEFE")
                         .requestMatchers("/dashboard/receipt/**").hasAnyRole("ADMINISTRADOR", "JEFE", "CAJERO")
+                        .requestMatchers("/dashboard/statistics/**").hasAnyRole("ADMINISTRADOR", "JEFE")
                         .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -88,4 +88,9 @@ public class DashboardController {
         model.addAttribute("pedidos", orderService.listOrders(statusFilter));
         return "fragments/caja";
     }
+
+    @GetMapping("/estadisticas_fragment")
+    public String estadisticasFragment() {
+        return "fragments/estadisticas";
+    }
 }

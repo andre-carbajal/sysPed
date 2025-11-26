@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tradición Norteña - Dashboard</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="app-container" id="appSection">
@@ -37,6 +38,9 @@
         <div class="nav-tab" data-tab="caja"
              sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_CAJERO')">Caja
         </div>
+        <div class="nav-tab" data-tab="estadisticas"
+             sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Estadísticas
+        </div>
     </div>
 
     <div id="dynamicTabContent"></div>
@@ -66,6 +70,9 @@
         }
         if (typeof cleanupCaja === 'function') {
             cleanupCaja();
+        }
+        if (typeof cleanupEstadisticas === 'function') {
+            cleanupEstadisticas();
         }
     }
 
@@ -162,6 +169,26 @@
                         }
                     };
                     document.body.appendChild(script);
+                });
+        } else if (tabName === 'estadisticas') {
+            removeOldScript();
+            fetch('/dashboard/estadisticas_fragment')
+                .then(res => res.text())
+                .then(html => {
+                    dynamicTabContent.innerHTML = html;
+                    const script = document.createElement('script');
+                    script.id = 'dynamic-tab-script';
+                    script.src = '/js/estadisticas.js';
+                    script.onload = function () {
+                        if (typeof initializeEstadisticas === 'function') {
+                            initializeEstadisticas();
+                        }
+                    };
+                    document.body.appendChild(script);
+                })
+                .catch(error => {
+                    console.error('Error loading estadisticas fragment:', error);
+                    dynamicTabContent.innerHTML = '<p>Error al cargar estadísticas</p>';
                 });
         }
     });

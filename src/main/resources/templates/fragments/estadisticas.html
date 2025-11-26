@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div class="estadisticas-container">
+    <!-- Filtros de Fecha -->
+    <div class="estadisticas-filters">
+        <h3>Filtros de Período</h3>
+        <div class="filter-group">
+            <label for="filterStartDate">Fecha Inicio:</label>
+            <input type="date" id="filterStartDate" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <label for="filterEndDate">Fecha Fin:</label>
+            <input type="date" id="filterEndDate" class="filter-input">
+        </div>
+        <div class="filter-group">
+            <label for="filterPeriod">Período:</label>
+            <select id="filterPeriod" class="filter-input">
+                <option value="daily">Diario</option>
+                <option value="monthly">Mensual</option>
+            </select>
+        </div>
+        <button id="applyFilters" class="btn btn-primary">Aplicar Filtros</button>
+        <button id="resetFilters" class="btn btn-secondary">Restablecer</button>
+    </div>
+
+    <!-- Tarjetas de Resumen -->
+    <div class="estadisticas-summary">
+        <div class="summary-card">
+            <div class="card-icon">💰</div>
+            <div class="card-content">
+                <h4>Ingresos Hoy</h4>
+                <p class="card-value" id="todayRevenue">S/ 0.00</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon">📊</div>
+            <div class="card-content">
+                <h4>Ingresos del Mes</h4>
+                <p class="card-value" id="monthRevenue">S/ 0.00</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon">🍽️</div>
+            <div class="card-content">
+                <h4>Pedidos Hoy</h4>
+                <p class="card-value" id="todayOrders">0</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon">📈</div>
+            <div class="card-content">
+                <h4>Pedidos del Mes</h4>
+                <p class="card-value" id="monthOrders">0</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon">💵</div>
+            <div class="card-content">
+                <h4>Ticket Promedio</h4>
+                <p class="card-value" id="averageTicket">S/ 0.00</p>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="card-icon">⭐</div>
+            <div class="card-content">
+                <h4>Plato Más Vendido</h4>
+                <p class="card-value" id="topPlate">-</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="estadisticas-charts">
+        <!-- Gráfico de Ingresos por Período -->
+        <div class="chart-container">
+            <h3>Ingresos por Período</h3>
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+        <!-- Gráfico de Días con Más Platos Vendidos -->
+        <div class="chart-container">
+            <h3>Días con Más Platos Vendidos</h3>
+            <canvas id="peakDaysChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Tablas de Datos -->
+    <div class="estadisticas-tables">
+        <!-- Tabla de Platos Más Vendidos -->
+        <div class="table-container">
+            <h3>Platos Más Vendidos</h3>
+            <div class="table-controls">
+                <button id="sortByQuantity" class="btn btn-small active">Por Cantidad</button>
+                <button id="sortByRevenue" class="btn btn-small">Por Ingresos</button>
+            </div>
+            <table class="estadisticas-table" id="topPlatesTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Plato</th>
+                        <th>Categoría</th>
+                        <th>Cantidad</th>
+                        <th>Ingresos</th>
+                        <th>% del Total</th>
+                    </tr>
+                </thead>
+                <tbody id="topPlatesBody">
+                    <tr>
+                        <td colspan="6" class="loading">Cargando datos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

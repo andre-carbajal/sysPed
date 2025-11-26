@@ -89,6 +89,11 @@ public class DashboardController {
         return "fragments/caja";
     }
 
+    @GetMapping("/recibos_fragment")
+    public String recibosFragment() {
+        return "fragments/recibos";
+    }
+
     @GetMapping("/estadisticas_fragment")
     public String estadisticasFragment() {
         return "fragments/estadisticas";

@@ -99,6 +99,13 @@ public class ReceiptService {
                 .map(this::toPrintDto);
     }
 
+    @Transactional(readOnly = true)
+    public List<ReceiptPrintDto> getAllReceipts() {
+        return receiptRepository.findAllWithDetails().stream()
+                .map(this::toPrintDto)
+                .collect(Collectors.toList());
+    }
+
     private ReceiptResponseDto toResponseDto(Receipt receipt) {
         String receiptType = (receipt.getRuc() != null && !receipt.getRuc().isBlank()) ? "FACTURA" : "BOLETA";
 

@@ -24,6 +24,9 @@
 
     <!-- Navigation Tabs -->
     <div class="nav-tabs" id="navTabs">
+        <div class="nav-tab" data-tab="estadisticas"
+             sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Estadísticas
+        </div>
         <div class="nav-tab" data-tab="personal" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Personal
         </div>
         <div class="nav-tab" data-tab="mesas" sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_MOZO')">
@@ -38,8 +41,8 @@
         <div class="nav-tab" data-tab="caja"
              sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE','ROLE_CAJERO')">Caja
         </div>
-        <div class="nav-tab" data-tab="estadisticas"
-             sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Estadísticas
+        <div class="nav-tab" data-tab="recibos"
+             sec:authorize="hasAnyRole('ROLE_ADMINISTRADOR','ROLE_JEFE')">Recibos
         </div>
     </div>
 
@@ -70,6 +73,9 @@
         }
         if (typeof cleanupCaja === 'function') {
             cleanupCaja();
+        }
+        if (typeof cleanupRecibos === 'function') {
+            cleanupRecibos();
         }
         if (typeof cleanupEstadisticas === 'function') {
             cleanupEstadisticas();
@@ -169,6 +175,26 @@
                         }
                     };
                     document.body.appendChild(script);
+                });
+        } else if (tabName === 'recibos') {
+            removeOldScript();
+            fetch('/dashboard/recibos_fragment')
+                .then(res => res.text())
+                .then(html => {
+                    dynamicTabContent.innerHTML = html;
+                    const script = document.createElement('script');
+                    script.id = 'dynamic-tab-script';
+                    script.src = '/js/recibos.js';
+                    script.onload = function () {
+                        if (typeof initRecibosTabEvents === 'function') {
+                            initRecibosTabEvents();
+                        }
+                    };
+                    document.body.appendChild(script);
+                })
+                .catch(error => {
+                    console.error('Error loading recibos fragment:', error);
+                    dynamicTabContent.innerHTML = '<p>Error al cargar recibos</p>';
                 });
         } else if (tabName === 'estadisticas') {
             removeOldScript();

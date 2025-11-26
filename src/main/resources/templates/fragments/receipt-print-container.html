@@ -1,0 +1,64 @@
+<!-- Contenedor oculto para impresión de comprobantes -->
+<div id="receiptPrintContainer" style="display: none;">
+    <div class="receipt-print">
+        <!-- Encabezado del restaurante -->
+        <div class="receipt-header">
+            <h2>RESTAURANTE TRADICION NORTEÑA</h2>
+            <p>Av. Principal 123, Lima - Perú</p>
+            <p>RUC: 20123456789</p>
+            <p>Tel: (01) 234-5678</p>
+        </div>
+
+        <!-- Tipo de comprobante -->
+        <div class="receipt-type">
+            <h3 id="receipt-type">BOLETA DE VENTA</h3>
+            <p>N° <span id="receipt-id">001-00001</span></p>
+        </div>
+
+        <!-- Información del cliente -->
+        <div class="receipt-customer">
+            <p><strong>Cliente:</strong> <span id="customer-name"></span></p>
+            <p id="customer-document"><strong>DNI:</strong> <span id="customer-dni"></span></p>
+        </div>
+
+        <!-- Información del pedido -->
+        <div class="receipt-order-info">
+            <p><strong>Pedido:</strong> #<span id="order-id"></span></p>
+            <p><strong>Mesa:</strong> <span id="table-number"></span></p>
+            <p><strong>Fecha:</strong> <span id="order-date"></span></p>
+            <p><strong>Atendido por:</strong> <span id="waiter-name"></span></p>
+        </div>
+
+        <!-- Tabla de items -->
+        <table class="receipt-items">
+            <thead>
+                <tr>
+                    <th>Cant.</th>
+                    <th>Descripción</th>
+                    <th>P.Unit</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="receipt-items-body">
+                <!-- Items se poblarán dinámicamente -->
+            </tbody>
+        </table>
+
+        <!-- Totales -->
+        <div class="receipt-totals">
+            <div class="receipt-discount" id="receipt-discount-section" style="display: none;">
+                <p><strong>Descuento:</strong> <span id="receipt-discount">S/ 0.00</span></p>
+            </div>
+            <p><strong>Subtotal:</strong> <span id="receipt-subtotal">S/ 0.00</span></p>
+            <p><strong>IGV (18%):</strong> <span id="receipt-igv">S/ 0.00</span></p>
+            <p class="receipt-total"><strong>TOTAL:</strong> <span id="receipt-total">S/ 0.00</span></p>
+        </div>
+
+        <!-- Pie de página -->
+        <div class="receipt-footer">
+            <p>¡Gracias por su preferencia!</p>
+            <p>Vuelva pronto</p>
+        </div>
+    </div>
+</div>
+

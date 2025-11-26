@@ -121,7 +121,7 @@ public class OrderService {
         Set<OrderStatus> allowed = switch (current) {
             case PENDIENTE -> Set.of(OrderStatus.EN_PREPARACION, OrderStatus.CANCELADO);
             case EN_PREPARACION -> Set.of(OrderStatus.LISTO, OrderStatus.CANCELADO);
-            case LISTO -> Set.of(OrderStatus.PAGADO);
+            case LISTO -> Set.of(OrderStatus.PAGADO, OrderStatus.CANCELADO);
             default -> Set.of();
         };
         if (!allowed.contains(newStatus)) {

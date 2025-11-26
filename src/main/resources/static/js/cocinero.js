@@ -89,7 +89,7 @@ function getAllowedStatusesForOrder(current) {
         case 'EN_PREPARACION':
             return ['LISTO', 'CANCELADO'];
         case 'LISTO':
-            return ['PAGADO'];
+            return ['PAGADO', 'CANCELADO'];
         default:
             return [];
     }

@@ -1,5 +1,6 @@
 package net.andrecarbajal.sysped.dto;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class OrderItemDto {
     private PlateDto plate;
 
     @Min(1)
+    @Max(30)
     private int quantity;
 
     private BigDecimal priceUnit;

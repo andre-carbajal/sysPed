@@ -409,8 +409,12 @@ function initOrderModalEvents() {
 
             if (action === 'increase') {
                 quantity++;
+                if (!validateForm(plateId, quantity)) {
+                    return;
+                }
             } else if (action === 'decrease' && quantity > 0) {
                 quantity--;
+                validateForm(plateId, quantity);
             }
 
             quantityDisplay.textContent = quantity;
@@ -431,6 +435,21 @@ function initOrderModalEvents() {
         }
     };
     overlay.addEventListener('input', overlay._notesInputHandler);
+}
+
+function validateForm(plateId, quantity){
+    const errorElement = document.getElementById(`plateQuantityError-${plateId}`);
+    if (errorElement) {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+    }
+
+    if (quantity > 30) {
+        showFieldError(`plateQuantityError-${plateId}`, 'La cantidad máxima por plato es 30.');
+        return false;
+    }
+
+    return true;
 }
 
 function cleanupMesas() {
@@ -550,6 +569,7 @@ function loadAvailablePlates() {
                         <span class="quantity-display" id="quantity-${plate.id}">${quantity}</span>
                         <button class="btn-quantity" data-action="increase" data-plate-id="${plate.id}">+</button>
                         <input type="text" class="notes-input" id="notes-${plate.id}" placeholder="Notas (opcional)" value="${notes}">
+                        <span class="field-error" id="plateQuantityError-${plate.id}"></span>
                     </div>
                 `;
                 platesList.appendChild(plateDiv);

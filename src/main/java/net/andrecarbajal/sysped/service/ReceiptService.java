@@ -2,11 +2,14 @@ package net.andrecarbajal.sysped.service;
 
 import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.controller.OrderWebSocketController;
-import net.andrecarbajal.sysped.controller.TableStatusWebSocketController;
+import net.andrecarbajal.sysped.dto.OrderItemDto;
+import net.andrecarbajal.sysped.dto.PlateDto;
 import net.andrecarbajal.sysped.dto.ReceiptCreateRequestDto;
+import net.andrecarbajal.sysped.dto.ReceiptPrintDto;
 import net.andrecarbajal.sysped.dto.ReceiptResponseDto;
 import net.andrecarbajal.sysped.mapper.OrderMapper;
 import net.andrecarbajal.sysped.model.Order;
+import net.andrecarbajal.sysped.model.OrderDetails;
 import net.andrecarbajal.sysped.model.OrderStatus;
 import net.andrecarbajal.sysped.model.Receipt;
 import net.andrecarbajal.sysped.model.TableStatus;
@@ -17,7 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +93,12 @@ public class ReceiptService {
                 .map(this::toResponseDto);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<ReceiptPrintDto> getReceiptForPrint(Long orderId) {
+        return receiptRepository.findByOrderIdWithDetails(orderId)
+                .map(this::toPrintDto);
+    }
+
     private ReceiptResponseDto toResponseDto(Receipt receipt) {
         String receiptType = (receipt.getRuc() != null && !receipt.getRuc().isBlank()) ? "FACTURA" : "BOLETA";
 
@@ -102,6 +113,51 @@ public class ReceiptService {
                 .subtotal(receipt.getSubtotal())
                 .igv(receipt.getIgv())
                 .total(receipt.getTotal())
+                .build();
+    }
+
+    private ReceiptPrintDto toPrintDto(Receipt receipt) {
+        Order order = receipt.getOrder();
+        String receiptType = (receipt.getRuc() != null && !receipt.getRuc().isBlank()) ? "FACTURA" : "BOLETA";
+
+        List<OrderItemDto> items = order.getDetails().stream()
+                .map(this::toOrderItemDto)
+                .collect(Collectors.toList());
+
+        return ReceiptPrintDto.builder()
+                .receiptId(receipt.getId())
+                .orderId(order.getId())
+                .receiptType(receiptType)
+                .customerName(receipt.getCustomerName())
+                .dni(receipt.getDni())
+                .ruc(receipt.getRuc())
+                .discount(receipt.getDiscount())
+                .subtotal(receipt.getSubtotal())
+                .igv(receipt.getIgv())
+                .total(receipt.getTotal())
+                .tableNumber(order.getRestaurantTable().getNumber())
+                .orderDate(order.getDateandtimeOrder())
+                .waiterName(order.getStaff().getName())
+                .items(items)
+                .build();
+    }
+
+    private OrderItemDto toOrderItemDto(OrderDetails detail) {
+        BigDecimal totalPrice = detail.getPriceUnit().multiply(BigDecimal.valueOf(detail.getQuantity()));
+
+        PlateDto plateDto = PlateDto.builder()
+                .id(detail.getPlate().getId())
+                .name(detail.getPlate().getName())
+                .price(detail.getPlate().getPrice())
+                .build();
+
+        return OrderItemDto.builder()
+                .plateId(detail.getPlate().getId())
+                .plate(plateDto)
+                .quantity(detail.getQuantity())
+                .priceUnit(detail.getPriceUnit())
+                .totalPrice(totalPrice)
+                .notes(detail.getNotes())
                 .build();
     }
 }

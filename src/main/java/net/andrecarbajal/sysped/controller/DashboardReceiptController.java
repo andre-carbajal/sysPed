@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import net.andrecarbajal.sysped.dto.OrderDto;
 import net.andrecarbajal.sysped.dto.OrderStatusChangeRequestDto;
 import net.andrecarbajal.sysped.dto.ReceiptCreateRequestDto;
+import net.andrecarbajal.sysped.dto.ReceiptPrintDto;
 import net.andrecarbajal.sysped.dto.ReceiptResponseDto;
 import net.andrecarbajal.sysped.model.OrderStatus;
 import net.andrecarbajal.sysped.service.OrderService;
@@ -83,6 +84,13 @@ public class DashboardReceiptController {
     @GetMapping("/{orderId}")
     public ResponseEntity<ReceiptResponseDto> getReceipt(@PathVariable Long orderId) {
         return receiptService.getReceiptByOrderId(orderId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{orderId}/print")
+    public ResponseEntity<ReceiptPrintDto> getReceiptForPrint(@PathVariable Long orderId) {
+        return receiptService.getReceiptForPrint(orderId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

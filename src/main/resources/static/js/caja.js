@@ -355,12 +355,172 @@ function closeSuccessModal() {
     document.getElementById('paymentSuccessModal').style.display = 'none';
 }
 
-function viewReceipt() {
-    alert('Funcionalidad en desarrollo');
+async function viewReceipt() {
+    try {
+        // Obtener el orderId del modal de éxito
+        const orderId = document.getElementById('successOrderId').textContent;
+        
+        // Obtener datos completos del recibo
+        const response = await fetch(`/dashboard/receipt/${orderId}/print`);
+        if (!response.ok) {
+            throw new Error('Error al obtener datos del recibo');
+        }
+        const receiptData = await response.json();
+        
+        // Poblar el HTML del comprobante
+        populateReceiptData(receiptData);
+        
+        // Mostrar el contenedor para vista previa (sin imprimir)
+        const container = document.getElementById('receiptPrintContainer');
+        container.style.display = 'block';
+        container.style.position = 'fixed';
+        container.style.top = '50%';
+        container.style.left = '50%';
+        container.style.transform = 'translate(-50%, -50%)';
+        container.style.backgroundColor = 'white';
+        container.style.padding = '20px';
+        container.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+        container.style.zIndex = '10000';
+        container.style.maxHeight = '80vh';
+        container.style.overflowY = 'auto';
+        container.style.border = '1px solid #ddd';
+        
+        // Agregar botón de cerrar si no existe
+        let closeBtn = container.querySelector('.close-preview-btn');
+        if (!closeBtn) {
+            closeBtn = document.createElement('button');
+            closeBtn.className = 'close-preview-btn';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.position = 'absolute';
+            closeBtn.style.top = '10px';
+            closeBtn.style.right = '10px';
+            closeBtn.style.fontSize = '24px';
+            closeBtn.style.border = 'none';
+            closeBtn.style.background = 'none';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.color = '#666';
+            closeBtn.onclick = function() {
+                container.style.display = 'none';
+                container.style.position = '';
+                container.style.top = '';
+                container.style.left = '';
+                container.style.transform = '';
+                container.style.backgroundColor = '';
+                container.style.padding = '';
+                container.style.boxShadow = '';
+                container.style.zIndex = '';
+                container.style.maxHeight = '';
+                container.style.overflowY = '';
+                container.style.border = '';
+            };
+            container.insertBefore(closeBtn, container.firstChild);
+        }
+        
+    } catch (error) {
+        console.error('Error al ver recibo:', error);
+        alert('Error al cargar el recibo. Por favor, intente nuevamente.');
+    }
 }
 
-function printReceipt() {
-    alert('Funcionalidad en desarrollo');
+async function printReceipt() {
+    try {
+        // 1. Obtener el orderId del modal de éxito
+        const orderId = document.getElementById('successOrderId').textContent;
+        
+        // 2. Obtener datos completos del recibo
+        const response = await fetch(`/dashboard/receipt/${orderId}/print`);
+        if (!response.ok) {
+            throw new Error('Error al obtener datos del recibo');
+        }
+        const receiptData = await response.json();
+        
+        // 3. Poblar el HTML del comprobante
+        populateReceiptData(receiptData);
+        
+        // 4. Mostrar el contenedor y abrir diálogo de impresión
+        const container = document.getElementById('receiptPrintContainer');
+        container.style.display = 'block';
+        
+        // Esperar un momento para que el DOM se actualice
+        setTimeout(() => {
+            window.print();
+            // Ocultar el contenedor después de imprimir
+            container.style.display = 'none';
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error al imprimir:', error);
+        alert('Error al generar el comprobante. Por favor, intente nuevamente.');
+    }
+}
+
+function populateReceiptData(data) {
+    // Tipo de comprobante y número
+    document.getElementById('receipt-type').textContent =
+        data.receiptType === 'FACTURA' ? 'FACTURA' : 'BOLETA DE VENTA';
+    document.getElementById('receipt-id').textContent =
+        String(data.receiptId).padStart(8, '0');
+    
+    // Información del cliente
+    document.getElementById('customer-name').textContent = data.customerName || 'Cliente General';
+    
+    const customerDoc = document.getElementById('customer-document');
+    if (data.receiptType === 'FACTURA' && data.ruc) {
+        customerDoc.innerHTML = `<strong>RUC:</strong> <span>${data.ruc}</span>`;
+        customerDoc.style.display = 'block';
+    } else if (data.dni) {
+        customerDoc.innerHTML = `<strong>DNI:</strong> <span>${data.dni}</span>`;
+        customerDoc.style.display = 'block';
+    } else {
+        customerDoc.style.display = 'none';
+    }
+    
+    // Información del pedido
+    document.getElementById('order-id').textContent = data.orderId;
+    document.getElementById('table-number').textContent = data.tableNumber;
+    document.getElementById('waiter-name').textContent = data.waiterName;
+    
+    // Formatear fecha
+    const orderDate = new Date(data.orderDate);
+    const formattedDate = `${orderDate.getDate().toString().padStart(2, '0')}/${
+        (orderDate.getMonth() + 1).toString().padStart(2, '0')}/${
+        orderDate.getFullYear()} ${
+        orderDate.getHours().toString().padStart(2, '0')}:${
+        orderDate.getMinutes().toString().padStart(2, '0')}`;
+    document.getElementById('order-date').textContent = formattedDate;
+    
+    // Poblar items
+    const itemsBody = document.getElementById('receipt-items-body');
+    itemsBody.innerHTML = '';
+    
+    data.items.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.quantity}</td>
+            <td>
+                ${item.plate.name}
+                ${item.notes ? `<br><small>${item.notes}</small>` : ''}
+            </td>
+            <td>S/ ${item.priceUnit.toFixed(2)}</td>
+            <td>S/ ${item.totalPrice.toFixed(2)}</td>
+        `;
+        itemsBody.appendChild(row);
+    });
+    
+    // Mostrar descuento si existe
+    const discountSection = document.getElementById('receipt-discount-section');
+    if (data.discount && data.discount > 0) {
+        discountSection.style.display = 'block';
+        document.getElementById('receipt-discount').textContent =
+            `S/ ${data.discount.toFixed(2)}`;
+    } else {
+        discountSection.style.display = 'none';
+    }
+    
+    // Totales
+    document.getElementById('receipt-subtotal').textContent = `S/ ${data.subtotal.toFixed(2)}`;
+    document.getElementById('receipt-igv').textContent = `S/ ${data.igv.toFixed(2)}`;
+    document.getElementById('receipt-total').textContent = `S/ ${data.total.toFixed(2)}`;
 }
 
 function confirmCancelOrder(orderId) {

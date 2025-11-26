@@ -116,3 +116,94 @@ INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv
 INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (6, NULL, '78945612', 'Ana Flores', 2.00, 52.54, 9.46, 62.00);
 INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (7, '20456789123', NULL, 'Corporativo Solutions SAC', 0.00, 99.15, 17.85, 117.00);
 INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (8, NULL, '32165498', 'Luis Vega', 15.00, 110.17, 19.83, 130.00);
+
+-- ========== 11 NUEVAS ORDENES - OCTUBRE Y NOVIEMBRE ==========
+
+-- Ordenes adicionales octubre-noviembre
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (9, '00000010', '2024-10-08 13:00:00', 'PAGADO', 118.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (10, '00000010', '2024-10-12 19:30:00', 'PAGADO', 88.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (11, '00000010', '2024-10-15 14:45:00', 'PAGADO', 156.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (12, '00000010', '2024-10-22 20:15:00', 'PAGADO', 94.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (13, '00000010', '2024-10-28 12:20:00', 'PAGADO', 72.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (14, '00000010', '2024-11-03 18:50:00', 'PAGADO', 135.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (15, '00000010', '2024-11-07 13:30:00', 'PAGADO', 102.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (16, '00000010', '2024-11-14 21:10:00', 'PAGADO', 168.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (17, '00000010', '2024-11-20 12:00:00', 'PAGADO', 85.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (18, '00000010', '2024-11-23 19:25:00', 'PAGADO', 124.00);
+INSERT INTO orders (table_id, staff_id, dateandtime_order, status, price_total) VALUES (19, '00000010', '2024-11-26 15:40:00', 'PAGADO', 110.00);
+
+-- Detalles de orden 9 (Mesa 9 - Octubre 8)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (9, 3, 2, 28.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (9, 1, 1, 25.00, 'Sin cebolla');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (9, 7, 3, 12.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (9, 9, 1, 8.00, 'Con hielo');
+
+-- Detalles de orden 10 (Mesa 10 - Octubre 12)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (10, 2, 2, 20.00, 'Picante aparte');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (10, 5, 2, 10.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (10, 6, 1, 18.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (10, 8, 2, 6.00, NULL);
+
+-- Detalles de orden 11 (Mesa 11 - Octubre 15)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (11, 4, 3, 32.00, 'Extra crujiente');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (11, 1, 1, 25.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (11, 7, 2, 12.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (11, 9, 1, 8.00, NULL);
+
+-- Detalles de orden 12 (Mesa 12 - Octubre 22)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (12, 3, 1, 28.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (12, 2, 2, 20.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (12, 8, 3, 6.00, 'Bien fría');
+
+-- Detalles de orden 13 (Mesa 13 - Octubre 28)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (13, 5, 3, 10.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (13, 6, 2, 18.00, 'Extra frejoles');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (13, 8, 1, 6.00, NULL);
+
+-- Detalles de orden 14 (Mesa 14 - Noviembre 3)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (14, 4, 2, 32.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (14, 3, 1, 28.00, 'Bien picante');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (14, 7, 2, 12.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (14, 9, 3, 8.00, NULL);
+
+-- Detalles de orden 15 (Mesa 15 - Noviembre 7)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (15, 1, 2, 25.00, 'Término medio');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (15, 2, 1, 20.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (15, 7, 2, 12.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (15, 8, 2, 6.00, NULL);
+
+-- Detalles de orden 16 (Mesa 16 - Noviembre 14)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (16, 4, 4, 32.00, 'Para compartir');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (16, 3, 1, 28.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (16, 7, 1, 12.00, NULL);
+
+-- Detalles de orden 17 (Mesa 17 - Noviembre 20)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (17, 2, 2, 20.00, 'Extra camote');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (17, 1, 1, 25.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (17, 8, 3, 6.00, NULL);
+
+-- Detalles de orden 18 (Mesa 18 - Noviembre 23)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (18, 4, 2, 32.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (18, 1, 1, 25.00, 'Bien cocido');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (18, 7, 2, 12.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (18, 9, 1, 8.00, NULL);
+
+-- Detalles de orden 19 (Mesa 19 - Noviembre 26)
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (19, 3, 2, 28.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (19, 2, 1, 20.00, NULL);
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (19, 7, 2, 12.00, 'Sin espuma');
+INSERT INTO order_details (order_id, plate_id, quantity, price_unit, notes) VALUES (19, 8, 2, 6.00, NULL);
+
+-- Recibos para las 11 nuevas órdenes (con IGV 18%)
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (9, NULL, '15975348', 'Roberto Sánchez', 0.00, 100.00, 18.00, 118.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (10, NULL, '25874163', 'Carmen Silva', 5.00, 70.34, 12.66, 83.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (11, '20345678912', NULL, 'Distribuidora Norte SAC', 0.00, 132.20, 23.80, 156.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (12, NULL, '36985214', 'Jorge Castillo', 0.00, 79.66, 14.34, 94.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (13, NULL, '47896321', 'Sandra Morales', 3.00, 59.32, 10.68, 70.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (14, '20567891234', NULL, 'Eventos Premium EIRL', 0.00, 114.41, 20.59, 135.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (15, NULL, '58741236', 'Patricia Gutiérrez', 0.00, 86.44, 15.56, 102.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (16, '20678912345', NULL, 'Corporación Gastronómica SAC', 10.00, 134.58, 24.22, 158.80);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (17, NULL, '69852147', 'Miguel Rojas', 0.00, 72.03, 12.97, 85.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (18, NULL, '74185296', 'Isabel Vargas', 0.00, 105.08, 18.92, 124.00);
+INSERT INTO receipts (order_id, ruc, dni, customer_name, discount, subtotal, igv, total) VALUES (19, NULL, '85236974', 'Fernando Díaz', 8.00, 86.44, 15.56, 102.00);
+

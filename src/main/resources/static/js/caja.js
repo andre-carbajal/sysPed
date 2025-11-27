@@ -4,11 +4,11 @@ let cajaRefreshInterval = null;
 let currentPaymentOrder = null;
 
 function initCajaTabEvents() {
-    const closeCancelModal = document.getElementById('closeCancelModal');
+    const closeCancelModalBtn = document.getElementById('closeCancelModal');
     const cancelCancelBtn = document.getElementById('cancelCancelAction');
     const confirmCancelBtn = document.getElementById('confirmCancelAction');
 
-    if (closeCancelModal) closeCancelModal.addEventListener('click', closeCancelModal);
+    if (closeCancelModalBtn) closeCancelModalBtn.addEventListener('click', closeCancelModal);
     if (cancelCancelBtn) cancelCancelBtn.addEventListener('click', closeCancelModal);
     if (confirmCancelBtn) confirmCancelBtn.addEventListener('click', executeCancelOrder);
 

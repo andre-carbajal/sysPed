@@ -1,6 +1,11 @@
 # sysPed
 Aplicacion desplegada : https://sysped.anvian.net
 
+## link youtube:
+- https://www.youtube.com/watch?si=bzWtxlbW_7p5z76r&v=79YtKGXFKr0&feature=youtu.be
+## Link repositorio:
+- https://github.com/andre-carbajal/sysped
+
 ## Technologies Used
 - Spring Boot
 - Maven
